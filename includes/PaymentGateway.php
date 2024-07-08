@@ -56,7 +56,7 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
     public function webhook()
     {
         $notify_json = file_get_contents('php://input');     
-        $notify_json = '{"type":"New","invoiceId":"AWcvgqG1pnCfcrD1aW2qUy"}';
+        //$notify_json = '{"type":"New","invoiceId":"AWcvgqG1pnCfcrD1aW2qUy"}';
         $notify_ar = json_decode($notify_json, true);
         $form_id = $_GET['form_id'];
         $invoice_id = $notify_ar['invoiceId'];
@@ -134,7 +134,7 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
 			    	$buyerEmail,
 			    	$buyerName, 
 			    	$return_url,
-			    	COINSNAP_REFERRAL_CODE,     
+			    	NF_Coinsnap::COINSNAP_REFERRAL_CODE,     
 			    	$metadata,
 			    	$checkoutOptions
 		    	);
