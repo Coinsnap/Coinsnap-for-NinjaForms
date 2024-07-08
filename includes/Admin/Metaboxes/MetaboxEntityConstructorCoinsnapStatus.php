@@ -1,0 +1,71 @@
+<?php
+
+use NinjaForms\Includes\Entities\MetaboxOutputEntity;
+
+class NF_Coinsnap_Admin_Metaboxes_MetaboxEntityConstructorCoinsnapStatus
+{
+
+    public function handle($extraValue, $nfSub): ?MetaboxOutputEntity
+    {
+        $return = null;
+
+        // If coinsnap_status is not set, return null to cancel output
+        if (!$nfSub->get_extra_value('coinsnap_status') && !$nfSub->get_extra_value('_coinsnap_status') ) {            
+            return $return;
+        }
+        
+        $labelValueCollection = self::extractResponses($nfSub);
+
+        if (!empty($labelValueCollection)) {
+
+            $array = [
+                'title' => __('Coinsnap Payment Details', 'ninjaforms-coinsnap'),
+                'labelValueCollection' => $labelValueCollection
+
+            ];
+
+            $return = MetaboxOutputEntity::fromArray($array);
+        }
+
+        return $return;
+    }
+
+    /**
+     * Extract all Coinsnap 'extra' data and add to constructed entity
+     *
+     * @param NF_Database_Models_Submission $nfSub
+     * @return array
+     */
+    protected static function extractResponses($nfSub): array
+    {
+        $return = [];
+
+        if ($nfSub->get_extra_value('coinsnap_status')) {
+            $return[] = [
+                'label' => __("Payment Status", "ninjaforms-coinsnap"),
+                'value' => $nfSub->get_extra_value('coinsnap_status'),
+                'styling' => ''
+            ];
+        }
+        if ($nfSub->get_extra_value('coinsnap_total')) {
+            $return[] = [
+                'label' => __("Payment Total", "ninjaforms-coinsnap"),
+                'value' => $nfSub->get_extra_value('coinsnap_total'),
+                'styling' => ''
+            ];
+        }
+        if ($nfSub->get_extra_value('coinsnap_transaction_id')) {
+            $return[] = [
+                'label' => __("Transaction ID", "ninjaforms-coinsnap"),
+                'value' => $nfSub->get_extra_value('coinsnap_transaction_id'),
+                'styling' => ''
+            ];
+        }
+        
+
+        
+
+        return $return;
+    }
+
+}
