@@ -1,2 +1,2 @@
 <?php
-// Silent Ninja is silent.
+exit();

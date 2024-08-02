@@ -10,7 +10,7 @@
  * Domain Path:     /languages
  * Version:         1.0.0
  * Requires PHP:    7.4
- * Tested up to:    6.5.5
+ * Tested up to:    6.6
  * NF tested up to: 3.8.5
  * Requires at least: 5.2
  * License:         MIT
@@ -209,7 +209,7 @@
     
     function NF_Coinsnap()
     {        
-        require_once (plugin_dir_path(__FILE__) . '/library/autoload.php');	
+        require_once (plugin_dir_path(__FILE__) . 'library/loader.php');	
         return NF_Coinsnap::instance();
     }
 
