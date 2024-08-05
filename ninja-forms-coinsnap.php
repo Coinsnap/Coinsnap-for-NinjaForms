@@ -13,8 +13,8 @@
  * Tested up to:    6.6
  * NF tested up to: 3.8.5
  * Requires at least: 5.2
- * License:         MIT
- * License URI:     https://github.com/Coinsnap/Coinsnap-for-NinjaForms/blob/main/LICENSE
+ * License:         GPL2
+ * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
  *
  * Network:         true
  */
