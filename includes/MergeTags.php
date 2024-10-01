@@ -1,4 +1,8 @@
-<?php if ( ! defined( 'ABSPATH' ) ) exit;
+<?php
+
+if ( ! defined( 'ABSPATH' ) ){
+    exit;
+}
 
 /**
  * Class NF_Coinsnap_MergeTags

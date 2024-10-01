@@ -1,4 +1,8 @@
-<?php if ( ! defined( 'ABSPATH' ) ) exit;
+<?php
+
+if ( ! defined( 'ABSPATH' ) ){
+    exit;
+}
 
 return apply_filters( 'nf_coinsnap_plugin_settings', array(
 

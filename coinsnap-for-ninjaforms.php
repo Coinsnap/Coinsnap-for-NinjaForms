@@ -1,17 +1,21 @@
-<?php if ( ! defined( 'ABSPATH' ) ) exit;
+<?php 
+
+if ( ! defined( 'ABSPATH' ) ){
+    exit;
+}
 
 /*
- * Plugin Name:     Coinsnap Add-On for Ninja Forms - for builder for WordPress 
+ * Plugin Name:     Coinsnap Add-On for Ninja Forms 
  * Description:     Provides a <a href="https://coinsnap.io">Coinsnap</a>  - Bitcoin + Lightning Payment Gateway for Ninja Forms.
  * Version:         1.0.0
  * Author:          Coinsnap
  * Author URI:      http://coinsnap.io
- * Text Domain:     coinsnap-for-ninjaForms
+ * Text Domain:     coinsnap-for-ninjaforms
  * Domain Path:     /languages
  * Version:         1.0.0
  * Requires PHP:    7.4
- * Tested up to:    6.6
- * NF tested up to: 3.8.5
+ * Tested up to:    6.6.2
+ * NF tested up to: 3.8.17
  * Requires at least: 5.2
  * License:         GPL2
  * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
@@ -61,7 +65,7 @@
         public function process_webhook()
         {        
                 
-            if ( ! isset( $_GET['nf-listener'] ) || $_GET['nf-listener'] !== 'coinsnap' ) {
+            if ( null === filter_input(INPUT_GET,'nf-listener',FILTER_SANITIZE_STRING)  || filter_input(INPUT_GET,'nf-listener',FILTER_SANITIZE_STRING) !== 'coinsnap' ) {
                 return;
             }
             
