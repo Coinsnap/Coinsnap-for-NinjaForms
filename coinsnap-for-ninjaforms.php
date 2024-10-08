@@ -65,7 +65,7 @@ if ( ! defined( 'ABSPATH' ) ){
         public function process_webhook()
         {        
                 
-            if ( null === filter_input(INPUT_GET,'nf-listener',FILTER_SANITIZE_STRING)  || filter_input(INPUT_GET,'nf-listener',FILTER_SANITIZE_STRING) !== 'coinsnap' ) {
+            if ( null === filter_input(INPUT_GET,'nf-listener',FILTER_SANITIZE_FULL_SPECIAL_CHARS)  || filter_input(INPUT_GET,'nf-listener',FILTER_SANITIZE_FULL_SPECIAL_CHARS) !== 'coinsnap' ) {
                 return;
             }
             
@@ -246,6 +246,20 @@ function NF_Coinsnap_Settings( $data ){
     }
     
     Ninja_Forms()->update_settings( $new_settings );
+    
+    $webhook_url = $this->get_webhook_url($form_id);
+
+    if ( ! $this->webhookExists( $this->getStoreId(), $this->getApiKey(), $webhook_url ) ) {
+                if ( ! $this->registerWebhook( $this->getStoreId(), $this->getApiKey(), $webhook_url ) ) {
+                    update_post_meta( $post_id, "_cf7_coinsnap_webhook", 'failed' );
+                }
+                else {
+                    update_post_meta( $post_id, "_cf7_coinsnap_webhook", 'registered' );
+                }
+            }
+            else {
+                update_post_meta( $post_id, "_cf7_coinsnap_webhook", 'exists' );
+            }
 
 
     
@@ -266,8 +280,8 @@ function NF_Coinsnap_Settings( $data ){
         }
 
         foreach( $data[ 'fields' ] as $field ){
-            if( '_calc' != $field[ 'type' ] ) continue;
-            if( ! isset( $field[ 'data' ][ 'calc_name' ] ) || 'total' != $field[ 'data' ][ 'calc_name' ] ) continue;
+            if( '_calc' != $field[ 'type' ] ){ continue; }
+            if( ! isset( $field[ 'data' ][ 'calc_name' ] ) || 'total' != $field[ 'data' ][ 'calc_name' ] ){ continue; }
             $new_action[ 'payment_total' ] = '{calc:calc_' . $field[ 'id' ] . '}';
         }        
 
