@@ -20,7 +20,7 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
     {
         parent::__construct();
 
-        $this->_name = esc_html__( 'Coinsnap', 'ninjaforms-coinsnap' );
+        $this->_name = esc_html__( 'Coinsnap', 'coinsnap-for-ninjaforms' );
         add_action( 'ninja_forms_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
         $this->_settings[ 'coinsnap_details' ] = array(
@@ -28,7 +28,7 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
             'type' => 'textarea',
             'placeholder' => '',
             'value' => '',
-            'label' => __( 'Details', 'ninja-forms' ),
+            'label' => __( 'Details', 'coinsnap-for-ninjaforms' ),
             'width' => 'full',
             'group' => 'advanced',
             'deps'  => array(
@@ -41,7 +41,7 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
         $this->_settings[ 'coinsnap_description' ] = array(
             'name' => 'coinsnap_description',
             'type' => 'textbox',
-            'label' => __( 'Note to Buyer', 'ninja-forms' ),
+            'label' => __( 'Note to Buyer', 'coinsnap-for-ninjaforms' ),
             'width' => 'full',
             'group' => 'advanced',
             'deps' => array(
@@ -59,8 +59,7 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
 
     public function webhook()
     {
-        $notify_json = file_get_contents('php://input');     
-        //$notify_json = '{"type":"New","invoiceId":"AWcvgqG1pnCfcrD1aW2qUy"}';
+        $notify_json = file_get_contents('php://input');
         $notify_ar = json_decode($notify_json, true);
         $form_id = filter_input(INPUT_GET,'form_id',FILTER_VALIDATE_INT);
         $invoice_id = $notify_ar['invoiceId'];
@@ -158,8 +157,8 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
 
     public function enqueue_scripts( $data )
     {        
-        wp_enqueue_script('nf-coinsnap-debug', NF_Coinsnap::$url . 'assets/js/debug.js', array( 'nf-front-end' ), '6.6.2' );
-        wp_enqueue_script('nf-coinsnap-response', NF_Coinsnap::$url . 'assets/js/error-handler.js', array( 'nf-front-end' ), '6.6.2' );
+        wp_enqueue_script('nf-coinsnap-debug', NF_Coinsnap::$url . 'assets/js/debug.js', array( 'nf-front-end' ), NF_Coinsnap::VERSION );
+        wp_enqueue_script('nf-coinsnap-response', NF_Coinsnap::$url . 'assets/js/error-handler.js', array( 'nf-front-end' ), NF_Coinsnap::VERSION );
     }
 
     private function is_success( $response )
@@ -195,9 +194,9 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
     private function get_status( $status )
     {
         $lookup = array(
-            'pending' => __( 'Pending', 'ninjaforms-coinsnap' ),
-            'cancel'  => __( 'Cancelled', 'ninjaforms-coinsnap' ),
-            'success' => __( 'Completed', 'ninjaforms-coinsnap' ),
+            'pending' => __( 'Pending', 'coinsnap-for-ninjaforms' ),
+            'cancel'  => __( 'Cancelled', 'coinsnap-for-ninjaforms' ),
+            'success' => __( 'Completed', 'coinsnap-for-ninjaforms' ),
         );
 
         return ( isset( $lookup[ $status ] ) ) ? $lookup[ $status ] : $lookup[ 'pending' ];
@@ -222,7 +221,7 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
     public function get_webhook_url($form_id) {		
         return get_site_url() . '/?nf-listener=coinsnap&form_id='.$form_id;
     }
-	public function getStoreId() {
+    public function getStoreId() {
         
         return Ninja_Forms()->get_setting( 'coinsnap_store_id' );
     }
@@ -249,6 +248,7 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
     
         return false;
     }
+    
     public  function registerWebhook(string $storeId, string $apiKey, string $webhook): bool {	
         try {			
             $whClient = new \Coinsnap\Client\Webhook($this->getApiUrl(), $apiKey);

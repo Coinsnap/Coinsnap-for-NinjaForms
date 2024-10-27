@@ -19,7 +19,7 @@ class NF_Coinsnap_Admin_Metaboxes_MetaboxEntityConstructorCoinsnapStatus
         if (!empty($labelValueCollection)) {
 
             $array = [
-                'title' => __('Coinsnap Payment Details', 'ninjaforms-coinsnap'),
+                'title' => __('Coinsnap Payment Details', 'coinsnap-for-ninjaforms'),
                 'labelValueCollection' => $labelValueCollection
 
             ];
@@ -42,21 +42,21 @@ class NF_Coinsnap_Admin_Metaboxes_MetaboxEntityConstructorCoinsnapStatus
 
         if ($nfSub->get_extra_value('coinsnap_status')) {
             $return[] = [
-                'label' => __("Payment Status", "ninjaforms-coinsnap"),
+                'label' => __("Payment Status", "coinsnap-for-ninjaforms"),
                 'value' => $nfSub->get_extra_value('coinsnap_status'),
                 'styling' => ''
             ];
         }
         if ($nfSub->get_extra_value('coinsnap_total')) {
             $return[] = [
-                'label' => __("Payment Total", "ninjaforms-coinsnap"),
+                'label' => __("Payment Total", "coinsnap-for-ninjaforms"),
                 'value' => $nfSub->get_extra_value('coinsnap_total'),
                 'styling' => ''
             ];
         }
         if ($nfSub->get_extra_value('coinsnap_transaction_id')) {
             $return[] = [
-                'label' => __("Transaction ID", "ninjaforms-coinsnap"),
+                'label' => __("Transaction ID", "coinsnap-for-ninjaforms"),
                 'value' => $nfSub->get_extra_value('coinsnap_transaction_id'),
                 'styling' => ''
             ];

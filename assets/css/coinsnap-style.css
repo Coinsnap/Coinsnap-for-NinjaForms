@@ -1,0 +1,6 @@
+#wpbody-content > div.coinsnap-notices:not(.wrap) {display:block;}
+.coinsnap-notices {position:fixed; right:10px; bottom:70px; width:240px; padding:0 15px; z-index:90000000;}
+.coinsnap-notices .notice {background:#FFFFFF; box-shadow: 0 1px 1px rgba(0,0,0,.04); padding: 1px 12px; margin:5px 0 15px;}
+.coinsnap-notices .notice-info {border-left:solid 4px #72aee6; }
+.coinsnap-notices .notice-success {border-left:solid 4px #00a32a; }
+.coinsnap-notices .notice-error {border-left:solid 4px #d63638; }
