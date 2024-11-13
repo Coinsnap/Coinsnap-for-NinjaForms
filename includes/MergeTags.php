@@ -16,13 +16,13 @@ final class NF_Coinsnap_MergeTags extends NF_Abstracts_MergeTags
     public function __construct()
     {
         parent::__construct();
-        $this->title = __( 'Coinsnap', 'ninja-forms' );
+        $this->title = __( 'Coinsnap', 'coinsnap-for-ninjaforms' );
 
         $this->merge_tags = array(
             'transaction_id' => array(
                 'id' => 'transaction_id',
                 'tag' => '{coinsnap:transaction_id}',
-                'label' => __( 'Transaction ID', 'ninjaforms-coinsnap' ),
+                'label' => __( 'Transaction ID', 'coinsnap-for-ninjaforms' ),
                 'callback' => 'get_transaction_id'
             ),
         );

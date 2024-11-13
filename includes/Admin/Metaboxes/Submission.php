@@ -6,7 +6,7 @@ final class NF_Coinsnap_Admin_Metaboxes_Submission extends NF_Abstracts_Submissi
     {
         parent::__construct();
 
-        $this->_title = __( 'Payment Details', 'ninja-forms' );        
+        $this->_title = __( 'Payment Details', 'coinsnap-for-ninjaforms' );        
 
         if( $this->sub && ! $this->sub->get_extra_value( 'coinsnap_status' ) && ! $this->sub->get_extra_value( '_coinsnap_status' ) ){
             remove_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ) );
@@ -26,9 +26,9 @@ final class NF_Coinsnap_Admin_Metaboxes_Submission extends NF_Abstracts_Submissi
         if( ! $transaction_id ) $transaction_id = $this->sub->get_extra_value( '_coinsnap_transaction_id' );
 
         $data = array(
-            __( 'Status', 'ninjaforms-coinsnap' ) => $status,
-            __( 'Total', 'ninjaforms-coinsnap' )  => $total,
-            __( 'Transaction ID', 'ninjaforms-coinsnap' ) => $transaction_id
+            __( 'Status', 'coinsnap-for-ninjaforms' ) => $status,
+            __( 'Total', 'coinsnap-for-ninjaforms' )  => $total,
+            __( 'Transaction ID', 'coinsnap-for-ninjaforms' ) => $transaction_id
         );
 
         NF_Coinsnap::template( 'admin-metaboxes-submission.html.php', $data );

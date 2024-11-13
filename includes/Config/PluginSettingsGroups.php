@@ -8,6 +8,6 @@ return apply_filters( 'nf_coinsnap_plugin_settings_groups', array(
 
     'coinsnap' => array(
         'id' => 'coinsnap',
-        'label' => __( 'Coinsnap', 'ninja-forms' ),
+        'label' => __( 'Coinsnap', 'coinsnap-for-ninjaforms' ),
     ),
 ));
