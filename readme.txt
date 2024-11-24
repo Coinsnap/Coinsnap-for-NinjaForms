@@ -3,7 +3,7 @@
 Contributors: coinsnap
 Tags:  Coinsnap, Ninja Forms, Bitcoin, Lightning 
 Requires at least: 5.2
-Tested up to: 6.7
+Tested up to: 6.7.1
 Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPL2
