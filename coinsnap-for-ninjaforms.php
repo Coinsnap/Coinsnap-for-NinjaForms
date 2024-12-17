@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ){
  * Version:         1.0.0
  * Requires PHP:    7.4
  * Tested up to:    6.7.1
- * NF tested up to: 3.8.21
+ * NF tested up to: 3.8.22
  * Requires at least: 6.0
  * License:         GPL2
  * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
