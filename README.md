@@ -1,4 +1,4 @@
-![Coinsnap for NinjaForms](https://github.com/Coinsnap/Coinsnap-for-NinjaForms/blob/main/assets/images/1.png)
+![Coinsnap for NinjaForms](https://resources.coinsnap.org/products/ninjaforms/images/1.png)
 
 # Coinsnap for NinjaForms payment plugin
 
@@ -7,7 +7,7 @@
 * Contributors: coinsnap
 * Tags: Lightning, Lightning Payment, SATS, Satoshi sats, bitcoin, Wordpress, Ninja Forms, payment gateway, accept bitcoin, bitcoin plugin, bitcoin payment processor, bitcoin e-commerce, Lightning Network, cryptocurrency, lightning payment processor
 * Requires at least: 5.2
-* Tested up to: 6.6.2
+* Tested up to: 6.7.1
 * Requires PHP: 7.4
 * Stable tag: 1.0.0
 * License:         GPL2
@@ -29,19 +29,19 @@ When authorized, the payment will be credited to your Lightning wallet in real t
 
 # Bitcoin and Lightning payments in Ninja Forms with Coinsnap #
 
-![NinjaForms](https://github.com/Coinsnap/Coinsnap-for-NinjaForms/blob/main/assets/images/2.png)
+![NinjaForms](https://resources.coinsnap.org/products/ninjaforms/images/2.png)
 
 Beautiful, user friendly WordPress forms that will make you feel like a professional web developer. You can accept Bitcoin and Lightning payments securely and easily from any of your WordPress forms. Single payments or subscriptions, fixed, variable, or user entered amounts. Give your customers or donors all the options with Coinsnap.
 
-![Ninja forms list](https://github.com/Coinsnap/Coinsnap-for-NinjaForms/blob/main/assets/images/6.png)
+![Ninja forms list](https://resources.coinsnap.org/products/ninjaforms/images/6.png)
 
 With the Coinsnap Bitcoin Lightning payment processing plugin you can immediately accept Bitcoin Lightning payments on your site. You don’t need your own Lightning node or any other technical requirements.
 
-![Ninja form edit](https://github.com/Coinsnap/Coinsnap-for-NinjaForms/blob/main/assets/images/7.png)
+![Ninja form edit](https://resources.coinsnap.org/products/ninjaforms/images/7.png)
 
 Simply register on [Coinsnap](https://app.coinsnap.io/register), enter your own Lightning address and install the Coinsnap payment module in your wordpress backend. Add your store ID and your API key which you’ll find in your Coinsnap account, and your customers can pay you with Bitcoin Lightning right away!
 
-![Ninja form page](https://github.com/Coinsnap/Coinsnap-for-NinjaForms/blob/main/assets/images/8.png)
+![Ninja form page](https://resources.coinsnap.org/products/ninjaforms/images/8.png)
 
 # Features: 
 
@@ -106,7 +106,7 @@ After successful installation, click Activate and then you can start setting up 
 
 ### 1.1. Add plugin ###
 
-![Plugin downloading from Github repository](https://github.com/Coinsnap/Coinsnap-for-NinjaForms/blob/main/assets/images/3.jpg)
+![Plugin downloading from Github repository](https://resources.coinsnap.org/products/ninjaforms/images/3.jpg)
 
 If you don’t want to install add-on directly via plugin, you can download Coinsnap Ninja Forms plug-in from Coinsnap Github page or from WordPress directory and install it via “Upload Plugin” function:
 
@@ -116,7 +116,7 @@ Click “Install now” and Coinsnap Ninja Forms plug-in will be installed in Wo
 
 After you have successfully installed the plugin, you can proceed with the connection to Coinsnap payment gateway.
 
-![Plugins list](https://github.com/Coinsnap/Coinsnap-for-NinjaForms/blob/main/assets/images/4.png)
+![Plugins list](https://resources.coinsnap.org/products/ninjaforms/images/4.png)
 
 ### 1.2. Configure Coinsnap Ninja Forms plug-in ###
 
@@ -134,7 +134,7 @@ If you don’t have a Coinsnap account yet, you can do so via the link shown: Co
 
 ### 2.1. Create a Coinsnap Account ####
 
-![Coinsnap register](https://github.com/Coinsnap/Coinsnap-for-NinjaForms/blob/main/assets/images/9.png)
+![Coinsnap register](https://resources.coinsnap.org/products/ninjaforms/images/9.png)
 
 Now go to the Coinsnap website at: https://app.coinsnap.io/register and open an account by entering your email address and a password of your choice.
 
@@ -142,7 +142,7 @@ If you are using a Lightning Wallet with Lightning Login, then you can also open
 
 ### 2.2. Confirm email address ####
 
-![E-mail address confirmation](https://github.com/Coinsnap/Coinsnap-for-NinjaForms/blob/main/assets/images/10.png)
+![E-mail address confirmation](https://resources.coinsnap.org/products/ninjaforms/images/10.png)
 
 You will receive an email to the given email address with a confirmation link, which you have to confirm. If you do not find the email, please check your spam folder.
 
@@ -150,7 +150,7 @@ Then please log in to the Coinsnap backend with the appropriate credentials.
 
 ### 2.3. Set up website at Coinsnap ###
 
-![Connect website with Coinsnap](https://github.com/Coinsnap/Coinsnap-for-NinjaForms/blob/main/assets/images/11.png)
+![Connect website with Coinsnap](https://resources.coinsnap.org/products/ninjaforms/images/11.png)
 
 After you sign up, you will be asked to provide two pieces of information.
 
@@ -183,7 +183,7 @@ We make a real donation payment in our test Ninja Forms site.
 
 The Bitcoin + Lightning payment page is now displayed, offering the payer the option to pay with Bitcoin or also with Lightning. Both methods are integrated in the displayed QR code.
 
-![QR code on the Bitcoin payment page](https://github.com/Coinsnap/Coinsnap-for-NinjaForms/blob/main/assets/images/12.png)
+![QR code on the Bitcoin payment page](https://resources.coinsnap.org/products/ninjaforms/images/12.png)
 
 # Upgrade Notice #
 

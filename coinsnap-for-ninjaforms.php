@@ -14,9 +14,9 @@ if ( ! defined( 'ABSPATH' ) ){
  * Domain Path:     /languages
  * Version:         1.0.0
  * Requires PHP:    7.4
- * Tested up to:    6.6.2
- * NF tested up to: 3.8.18
- * Requires at least: 5.2
+ * Tested up to:    6.7.1
+ * NF tested up to: 3.8.23
+ * Requires at least: 6.0
  * License:         GPL2
  * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
  *
