@@ -15,9 +15,10 @@
 
 Coinsnap payment plug-in for Worpress form builder Ninja Forms to accept Bitcoin and Lightning payments via Coinsnap payment gateway https://app.coinsnap.io/.
 
-* NinjaForms Coinsnap Demo Store: https://ninjaforms.coinsnap.org
-* Blog Article: https://coinsnap.io/en/coinsnap-for-ninjaforms-plugin/
-* GitHub: https://github.com/Coinsnap/Coinsnap-for-NinjaForms/
+* NinjaForms Coinsnap Demo Store: [https://ninjaforms.coinsnap.org](https://ninjaforms.coinsnap.org)
+* Blog Article: [https://coinsnap.io/coinsnap-for-ninjaforms-plugin/](https://coinsnap.io/coinsnap-for-ninjaforms-plugin/)
+* WordPress: [https://wordpress.org/plugins/coinsnap-for-ninjaforms/](https://wordpress.org/plugins/coinsnap-for-ninjaforms/)
+* GitHub: [https://github.com/Coinsnap/Coinsnap-for-NinjaForms/](https://github.com/Coinsnap/Coinsnap-for-NinjaForms/)
 
 # Description #
 
