@@ -5,8 +5,8 @@ if ( ! defined( 'ABSPATH' ) ){
 }
 
 /*
- * Plugin Name:     Coinsnap Add-On for Ninja Forms 
- * Description:     Provides a <a href="https://coinsnap.io">Coinsnap</a>  - Bitcoin + Lightning Payment Gateway for Ninja Forms.
+ * Plugin Name:     Bitcoin payment for Ninja Forms 
+ * Description:     Bitcoin and Lightning payment processing with the Coinsnap payment gateway for Ninja Forms.
  * Version:         1.0.0
  * Author:          Coinsnap
  * Author URI:      http://coinsnap.io
@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ){
  * Requires PHP:    7.4
  * Tested up to:    6.7
  * NF tested up to: 3.9.0
+ * Requires Plugins: ninja-forms
  * Requires at least: 6.0
  * License:         GPL2
  * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
@@ -293,6 +294,23 @@ if ( ! defined( 'ABSPATH' ) ){
 
 
 add_filter( 'ninja_forms_upgrade_settings', 'NF_Coinsnap_Settings', 9999 );
+
+add_action('admin_init', 'check_nf_dependency');
+
+function check_nf_dependency(){
+        
+            if (!is_plugin_active('ninja-forms/ninja-forms.php')) {
+            add_action('admin_notices', 'nf_dependency_notice');
+            deactivate_plugins(plugin_basename(__FILE__));
+        }
+    }
+    
+function nf_dependency_notice(){?>
+    <div class="notice notice-error">
+        <p><?php echo esc_html_e('Bitcoin payment for Ninja Forms requires Ninja Forms to be installed and activated.','coinsnap-for-ninjaforms');?></p>
+    </div>
+    <?php        
+    }
 
 function NF_Coinsnap_Settings( $data ){
     
