@@ -2,7 +2,7 @@
 
 # Coinsnap for NinjaForms payment plugin
 
-=== Coinsnap for NinjaForms 1.0.0 ===
+## Bitcoin payment for Ninja Forms ##
 
 * Contributors: coinsnap
 * Tags: Lightning, Lightning Payment, SATS, Satoshi sats, bitcoin, Wordpress, Ninja Forms, payment gateway, accept bitcoin, bitcoin plugin, bitcoin payment processor, bitcoin e-commerce, Lightning Network, cryptocurrency, lightning payment processor

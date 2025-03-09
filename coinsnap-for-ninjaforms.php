@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ){
  * Version:         1.0.0
  * Requires PHP:    7.4
  * Tested up to:    6.7
- * NF tested up to: 3.9.0
+ * NF tested up to: 3.9.1
  * Requires Plugins: ninja-forms
  * Requires at least: 6.0
  * License:         GPL2

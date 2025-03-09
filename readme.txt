@@ -1,4 +1,4 @@
-=== Coinsnap Add-On for Ninja Forms ===
+=== Bitcoin payment for Ninja Forms ===
 
 Contributors: coinsnap
 Tags:  Coinsnap, Ninja Forms, Bitcoin, Lightning 
