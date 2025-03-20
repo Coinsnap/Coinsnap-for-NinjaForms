@@ -127,7 +127,7 @@ Place an order in one of your Ninja Forms forms and click the black payment butt
 
 You will now be redirected to the Bitcoin-Lightning payment page to complete the purchase. The Bitcoin payment page is now displayed and offers the payer the option of paying with Bitcoin or Lightning. Both methods are integrated in the displayed QR code. After successful payment, the invoice can be viewed in detail.
 
-![QR code on the Bitcoin payment page](https://resources.coinsnap.org/products/ninjaforms/images/12.png)
+![QR code on the Bitcoin payment page](https://resources.coinsnap.org/products/ninjaforms/images/screenshot-12.png)
 
 
 ## 2. Install the Coinsnap for Ninja Forms plugin from the WordPress plugin repository ##
