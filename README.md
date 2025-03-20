@@ -134,7 +134,7 @@ You will now be redirected to the Bitcoin-Lightning payment page to complete the
 
 The Coinsnap for Ninja Forms plugin can be searched and installed in the WordPress plugin directory.
 
-![Plugin downloading from Github repository](https://resources.coinsnap.org/products/ninjaforms/images/3.jpg)
+
 
 You can easily find the Coinsnap for Ninja Forms plugin under **Plugins/Install new plugin** if you enter Coinsnap for Ninja Forms in the search field. Simply click on **Install now** in the Coinsnap plugin and WordPress will install it for you.
 
