@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ){
 
 /*
  * Plugin Name:     Bitcoin payment for Ninja Forms 
- * Description:     Bitcoin and Lightning payment processing with the Coinsnap payment gateway for Ninja Forms.
+ * Description:     Accept Bitcoin-Lightning payments with Ninja Forms
  * Version:         1.0.0
  * Author:          Coinsnap
  * Author URI:      http://coinsnap.io
@@ -82,8 +82,8 @@ if ( ! defined( 'ABSPATH' ) ){
                 
                 $CoinsnapPG = new NF_Coinsnap_PaymentGateway();
                 $coinsnap_url = $CoinsnapPG->getApiUrl();
-                $coinsnap_api_key = $current_settings['coinsnap_api_key'];
-                $coinsnap_store_id = $current_settings['coinsnap_store_id'];
+                $coinsnap_api_key = (isset($current_settings['coinsnap_api_key']))? $current_settings['coinsnap_api_key'] : "";
+                $coinsnap_store_id = (isset($current_settings['coinsnap_store_id']))? $current_settings['coinsnap_store_id'] : "";
                 
                 echo '<div class="coinsnap-notices">';
             
@@ -295,7 +295,7 @@ if ( ! defined( 'ABSPATH' ) ){
 
 add_filter( 'ninja_forms_upgrade_settings', 'NF_Coinsnap_Settings', 9999 );
 
-add_action('admin_init', 'check_nf_dependency');
+add_action('admin_init', 'check_nf_dependency' );
 
 function check_nf_dependency(){
         
