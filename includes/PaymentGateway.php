@@ -20,7 +20,7 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
     {
         parent::__construct();
 
-        $this->_name = esc_html__( 'Coinsnap', 'coinsnap-for-ninjaforms' );
+        $this->_name = esc_html__( 'Coinsnap', 'coinsnap-for-ninja-forms' );
         add_action( 'ninja_forms_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
         $this->_settings[ 'coinsnap_details' ] = array(
@@ -28,32 +28,29 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
             'type' => 'textarea',
             'placeholder' => '',
             'value' => '',
-            'label' => __( 'Details', 'coinsnap-for-ninjaforms' ),
+            'label' => __( 'Details', 'coinsnap-for-ninja-forms' ),
             'width' => 'full',
             'group' => 'advanced',
             'deps'  => array(
                 'payment_gateways' => $this->_slug
             ),
-            'help' => __( 'Extra information associated with the payment, such as shipping address, email, etc. This will be saved as Transaction Data in your Coinsnap Account.', 'coinsnap-for-ninjaforms' ),
+            'help' => __( 'Extra information associated with the payment, such as shipping address, email, etc. This will be saved as Transaction Data in your Coinsnap Account.', 'coinsnap-for-ninja-forms' ),
             'use_merge_tags' => TRUE
         );
         
         $this->_settings[ 'coinsnap_description' ] = array(
             'name' => 'coinsnap_description',
             'type' => 'textbox',
-            'label' => __( 'Note to Buyer', 'coinsnap-for-ninjaforms' ),
+            'label' => __( 'Note to Buyer', 'coinsnap-for-ninja-forms' ),
             'width' => 'full',
             'group' => 'advanced',
             'deps' => array(
                 'payment_gateways' => $this->_slug
             ),
             /* translators: 1: A note from the merchant to the buyer that will be displayed in the Coinsnap checkout window. */
-            'help' => sprintf( esc_html__( 'A note from the merchant to the buyer that will be displayed in the Coinsnap checkout window. Limit %1$s characters', 'coinsnap-for-ninjaforms' ), '165' ),
+            'help' => sprintf( esc_html__( 'A note from the merchant to the buyer that will be displayed in the Coinsnap checkout window. Limit %1$s characters', 'coinsnap-for-ninja-forms' ), '165' ),
             'use_merge_tags' => TRUE
         );
-
-        
-
 
     }
 
@@ -82,76 +79,90 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
     }
 
     
-    public function process( $action_settings, $form_id, $data )
-    {
+    public function process( $action_settings, $form_id, $data ){
         
-        
-        if( $action_settings[ 'payment_total' ] <= 0 || NULL == $action_settings[ 'payment_total' ] ) return $data;        
-        $payment_total = number_format( $action_settings[ 'payment_total' ], 2, '.', ',' );
-        $return_url = add_query_arg( array( 'nf_resume' => $form_id, 'coinsnap_act' => 'success' ), wp_get_referer() );
-        
-
-        
-        if( isset( $data[ 'resume' ] ) ){
-            $data[ 'actions' ][ 'success_message' ] .= '<style> .nf-ppe-spinner { display: none !important; } </style>';
+        $currency = $this->get_currency( $data );
+        $client =new \Coinsnap\Client\Invoice($this->getApiUrl(), $this->getApiKey());
+        $checkInvoice = $client->checkPaymentData((float)$action_settings[ 'payment_total' ],strtoupper( $currency ));
+        $checkInvoiceError = array(
+            'amountError' => 'Invoice amount cannot be less than ',
+            'currencyError' => 'Currency is not supported by Coinsnap'
+        );
+        /*
+        if( $action_settings[ 'payment_total' ] <= 0 || NULL == $action_settings[ 'payment_total' ] ){
             return $data;
         }
-
-        $webhook_url = $this->get_webhook_url($form_id);        
-                        
-				
-        if (! $this->webhookExists($this->getStoreId(), $this->getApiKey(), $webhook_url)){
-            if (! $this->registerWebhook($this->getStoreId(), $this->getApiKey(), $webhook_url)) {                
-                echo (esc_html__('Unable to set Webhook url.', 'coinsnap-for-ninjaforms'));
-                exit;
+        */ 
+        
+        if($checkInvoice['result'] === true){
+        
+            $payment_total = number_format( $action_settings[ 'payment_total' ], 2, '.', ',' );        
+            $return_url = add_query_arg( array( 'nf_resume' => $form_id, 'coinsnap_act' => 'success' ), wp_get_referer() );
+                
+            if(isset( $data[ 'resume' ] )){
+                $data[ 'actions' ][ 'success_message' ] .= '<style> .nf-ppe-spinner { display: none !important; } </style>';
+                return $data;
             }
-         }      
 
-        $currency = $this->get_currency( $data );
-        $store_id = Ninja_Forms()->get_setting( 'coinsnap_store_id' );
-        $api_key = Ninja_Forms()->get_setting( 'coinsnap_api_key' );     
-        $invoice_no = $this->get_sub_id( $data );
-        $first_name = $this->get_nf_data($data, 'firstname');
-        $last_name = $this->get_nf_data($data, 'lastname');
-        $buyerEmail = $this->get_nf_data($data, 'email');
-        $buyerName = $first_name.' '.$last_name;
-        $metadata = [];
-        $metadata['orderNumber'] = $invoice_no;
-        $metadata['customerName'] = $buyerName;
-				
+            $webhook_url = $this->get_webhook_url($form_id);
 
-        $checkoutOptions = new \Coinsnap\Client\InvoiceCheckoutOptions();
-        $checkoutOptions->setRedirectURL( $return_url );
-        $client =new \Coinsnap\Client\Invoice($this->getApiUrl(), $this->getApiKey());
-        $camount = \Coinsnap\Util\PreciseNumber::parseFloat($payment_total,2);
-								
-        $csinvoice = $client->createInvoice(
-				    $this->getStoreId(),  
-			    	strtoupper( $currency ),
-			    	$camount,
-			    	$invoice_no,
-			    	$buyerEmail,
-			    	$buyerName, 
-			    	$return_url,
-			    	NF_Coinsnap::COINSNAP_REFERRAL_CODE,     
-			    	$metadata,
-			    	$checkoutOptions
-		    	);
-				
-		
-        $payurl = $csinvoice->getData()['checkoutLink'] ;   
-        if (isset($payurl)){
-            $data[ 'halt' ] = TRUE;
-            $data[ 'actions' ][ 'redirect' ] = $payurl;
+            if (! $this->webhookExists($this->getStoreId(), $this->getApiKey(), $webhook_url)){
+                if (! $this->registerWebhook($this->getStoreId(), $this->getApiKey(), $webhook_url)) {                
+                    echo (esc_html__('Unable to set Webhook url.', 'coinsnap-for-ninja-forms'));
+                    exit;
+                }
+            }      
 
-            $this->update_submission( $this->get_sub_id( $data ), array(
-                'coinsnap_status' => esc_html__( 'Pending', 'coinsnap-for-ninjaforms' ),
-                'coinsnap_total' => $payment_total
-            ) );    
+            
+            $invoice_no = $this->get_sub_id( $data );
+            $first_name = $this->get_nf_data($data, 'firstname');
+            $last_name = $this->get_nf_data($data, 'lastname');
+            $buyerEmail = $this->get_nf_data($data, 'email');
+            $buyerName = $first_name.' '.$last_name;
+            $metadata = [];
+            $metadata['orderNumber'] = $invoice_no;
+            $metadata['customerName'] = $buyerName;
+
+            $camount = \Coinsnap\Util\PreciseNumber::parseFloat($payment_total,2);
+            $redirectAutomatically = ($this->getAutoRedirect() === 1)? true : false;
+            $walletMessage = '';
+
+            $csinvoice = $client->createInvoice(
+                $this->getStoreId(),  
+                strtoupper( $currency ),
+                $camount,
+                $invoice_no,
+                $buyerEmail,
+                $buyerName, 
+                $return_url,
+                NF_Coinsnap::COINSNAP_REFERRAL_CODE,     
+                $metadata,
+                $redirectAutomatically,
+                $walletMessage
+            );
+
+
+            $payurl = $csinvoice->getData()['checkoutLink'] ;   
+            if (isset($payurl)){
+                $data[ 'halt' ] = TRUE;
+                $data[ 'actions' ][ 'redirect' ] = $payurl;
+
+                $this->update_submission( $this->get_sub_id( $data ), array(
+                    'coinsnap_status' => esc_html__( 'Pending', 'coinsnap-for-ninja-forms' ),
+                    'coinsnap_total' => $payment_total
+                ) );    
+            }
         }
-
-      
-
+        
+        else {
+            $errorMessage = $checkInvoiceError[$checkInvoice['error']];
+            if($checkInvoice['error'] == 'amountError'){
+                $errorMessage .= ' '.$checkInvoice['min_value'].' '.strtoupper( $currency );
+            }
+            $data[ 'errors' ][ 'form' ][ 'coinsnap' ] = esc_html($errorMessage);
+            
+        }
+                
         return $data;
     }
 
@@ -194,9 +205,9 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
     private function get_status( $status )
     {
         $lookup = array(
-            'pending' => __( 'Pending', 'coinsnap-for-ninjaforms' ),
-            'cancel'  => __( 'Cancelled', 'coinsnap-for-ninjaforms' ),
-            'success' => __( 'Completed', 'coinsnap-for-ninjaforms' ),
+            'pending' => __( 'Pending', 'coinsnap-for-ninja-forms' ),
+            'cancel'  => __( 'Cancelled', 'coinsnap-for-ninja-forms' ),
+            'success' => __( 'Completed', 'coinsnap-for-ninja-forms' ),
         );
 
         return ( isset( $lookup[ $status ] ) ) ? $lookup[ $status ] : $lookup[ 'pending' ];
@@ -227,6 +238,9 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
     }
     public function getApiKey() {
         return Ninja_Forms()->get_setting( 'coinsnap_api_key' );
+    }
+    public function getAutoRedirect() {
+        return Ninja_Forms()->get_setting( 'coinsnap_autoredirect' );
     }
     
     public function getApiUrl() {

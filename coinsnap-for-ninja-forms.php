@@ -10,12 +10,12 @@ if ( ! defined( 'ABSPATH' ) ){
  * Version:         1.0.0
  * Author:          Coinsnap
  * Author URI:      http://coinsnap.io
- * Text Domain:     coinsnap-for-ninjaforms
+ * Text Domain:     coinsnap-for-ninja-forms
  * Domain Path:     /languages
  * Version:         1.0.0
  * Requires PHP:    7.4
  * Tested up to:    6.7
- * NF tested up to: 3.9.1
+ * NF tested up to: 3.9.2
  * Requires Plugins: ninja-forms
  * Requires at least: 6.0
  * License:         GPL2
@@ -24,10 +24,14 @@ if ( ! defined( 'ABSPATH' ) ){
  * Network:         true
  */
 
+if(!defined('COINSNAP_CURRENCIES')){
+    define( 'COINSNAP_CURRENCIES', array("EUR","USD","SATS","BTC","CAD","JPY","GBP","CHF","RUB") );
+}
+
 /**
 * Class NF_Coinsnap
 */
-    final class NF_Coinsnap {
+final class NF_Coinsnap {
         
         const VERSION = '1.0.0';
         const SLUG    = 'coinsnap';
@@ -89,13 +93,13 @@ if ( ! defined( 'ABSPATH' ) ){
             
                if(!isset($coinsnap_store_id) || empty($coinsnap_store_id)){
                     echo '<div class="notice notice-error"><p>';
-                    esc_html_e('Ninja Forms: Coinsnap Store ID is not set', 'coinsnap-for-ninjaforms');
+                    esc_html_e('Ninja Forms: Coinsnap Store ID is not set', 'coinsnap-for-ninja-forms');
                     echo '</p></div>';
                 }
 
                 if(!isset($coinsnap_api_key) || empty($coinsnap_api_key)){
                     echo '<div class="notice notice-error"><p>';
-                    esc_html_e('Ninja Forms: Coinsnap API Key is not set', 'coinsnap-for-ninjaforms');
+                    esc_html_e('Ninja Forms: Coinsnap API Key is not set', 'coinsnap-for-ninja-forms');
                     echo '</p></div>';
                 }
                 
@@ -104,7 +108,7 @@ if ( ! defined( 'ABSPATH' ) ){
                     $store = $client->getStore($coinsnap_store_id);
                     if ($store['code'] === 200) {
                         echo '<div class="notice notice-success"><p>';
-                        esc_html_e('Ninja Forms: Established connection to Coinsnap Server', 'coinsnap-for-ninjaforms');
+                        esc_html_e('Ninja Forms: Established connection to Coinsnap Server', 'coinsnap-for-ninja-forms');
                         echo '</p></div>';
                         
                         $form_id = filter_input(INPUT_GET,'form_id',FILTER_VALIDATE_INT);
@@ -116,18 +120,18 @@ if ( ! defined( 'ABSPATH' ) ){
                             if ( ! $CoinsnapPG->webhookExists( $coinsnap_store_id, $coinsnap_api_key, $coinsnap_webhook_url ) ) {
                                 if ( ! $CoinsnapPG->registerWebhook( $coinsnap_store_id, $coinsnap_api_key, $coinsnap_webhook_url ) ) {
                                     echo '<div class="notice notice-error"><p>';
-                                    esc_html_e('Ninja Forms: Unable to create webhook on Coinsnap Server', 'coinsnap-for-ninjaforms');
+                                    esc_html_e('Ninja Forms: Unable to create webhook on Coinsnap Server', 'coinsnap-for-ninja-forms');
                                     echo '</p></div>';
                                 }
                                 else {
                                     echo '<div class="notice notice-success"><p>';
-                                    esc_html_e('Ninja Forms: Successfully registered webhook on Coinsnap Server', 'coinsnap-for-ninjaforms');
+                                    esc_html_e('Ninja Forms: Successfully registered webhook on Coinsnap Server', 'coinsnap-for-ninja-forms');
                                     echo '</p></div>';
                                 }
                             }
                             else {
                                 echo '<div class="notice notice-info"><p>';
-                                esc_html_e('Ninja Forms: Webhook already exists, skipping webhook creation', 'coinsnap-for-ninjaforms');
+                                esc_html_e('Ninja Forms: Webhook already exists, skipping webhook creation', 'coinsnap-for-ninja-forms');
                                 echo '</p></div>';
                             }
                             
@@ -135,7 +139,7 @@ if ( ! defined( 'ABSPATH' ) ){
                     }
                     else {
                         echo '<div class="notice notice-error"><p>';
-                        esc_html_e('Ninja Forms: Coinsnap connection error:', 'coinsnap-for-ninjaforms');
+                        esc_html_e('Ninja Forms: Coinsnap connection error:', 'coinsnap-for-ninja-forms');
                         echo esc_html($store['result']['message']);
                         echo '</p></div>';
                     }
@@ -188,7 +192,7 @@ if ( ! defined( 'ABSPATH' ) ){
 	    
 	    public function register_actions( $actions ){	    	
             
-		    $coinsnap_action = new NF_Actions_CollectPayment( __( 'Coinsnap', 'coinsnap-for-ninjaforms' ), 'coinsnap' );		    
+		    $coinsnap_action = new NF_Actions_CollectPayment( __( 'Coinsnap', 'coinsnap-for-ninja-forms' ), 'coinsnap' );		    
 		    $actions[ 'coinsnap' ] = $coinsnap_action;
 
 		    return $actions;
@@ -199,8 +203,8 @@ if ( ! defined( 'ABSPATH' ) ){
             
             $templates[ 'coinsnap-payment' ] = array(
                 'id'            => 'coinsnap-payment',
-                'title'         => __( 'Coinsnap Payment', 'coinsnap-for-ninjaforms' ),
-                'template-desc' => __( 'Collect a payment using Coinsnap. You can add and remove fields as needed.', 'coinsnap-for-ninjaforms' ),
+                'title'         => __( 'Coinsnap Payment', 'coinsnap-for-ninja-forms' ),
+                'template-desc' => __( 'Collect a payment using Coinsnap. You can add and remove fields as needed.', 'coinsnap-for-ninja-forms' ),
                 'form'          => self::form_templates( 'coinsnap-payment.nff' ),
             );
 
@@ -268,8 +272,8 @@ if ( ! defined( 'ABSPATH' ) ){
             if( ! $add_transactions ) return $csv_array;
             
             // Add our labels.
-            $csv_array[ 0 ][ 0 ][ 'coinsnap_status' ] = __( 'Coinsnap Status', 'coinsnap-for-ninjaforms' );
-            $csv_array[ 0 ][ 0 ][ 'coinsnap_transaction_id' ] = __( 'Coinsnap Transaction ID', 'coinsnap-for-ninjaforms' );
+            $csv_array[ 0 ][ 0 ][ 'coinsnap_status' ] = __( 'Coinsnap Status', 'coinsnap-for-ninja-forms' );
+            $csv_array[ 0 ][ 0 ][ 'coinsnap_transaction_id' ] = __( 'Coinsnap Transaction ID', 'coinsnap-for-ninja-forms' );
             // Add our values.
             $i = 0;
             foreach( $subs as $sub ) {
@@ -281,36 +285,32 @@ if ( ! defined( 'ABSPATH' ) ){
             
         }
 
-    }
-
+}
     
-    function NF_Coinsnap(){        
-        require_once (plugin_dir_path(__FILE__) . 'library/loader.php');	
-        return NF_Coinsnap::instance();
+function NF_Coinsnap(){        
+    require_once (plugin_dir_path(__FILE__) . 'library/loader.php');	
+    return NF_Coinsnap::instance();
+}
+
+function check_nf_dependency(){        
+    if (!is_plugin_active('ninja-forms/ninja-forms.php')) {
+        add_action('admin_notices', 'nf_dependency_notice');
+        deactivate_plugins(plugin_basename(__FILE__));
     }
-
-    // Go ninja, go ninja, go!
-    NF_Coinsnap();
-
-
-add_filter( 'ninja_forms_upgrade_settings', 'NF_Coinsnap_Settings', 9999 );
-
-add_action('admin_init', 'check_nf_dependency' );
-
-function check_nf_dependency(){
-        
-            if (!is_plugin_active('ninja-forms/ninja-forms.php')) {
-            add_action('admin_notices', 'nf_dependency_notice');
-            deactivate_plugins(plugin_basename(__FILE__));
-        }
-    }
+}
     
 function nf_dependency_notice(){?>
     <div class="notice notice-error">
-        <p><?php echo esc_html_e('Bitcoin payment for Ninja Forms requires Ninja Forms to be installed and activated.','coinsnap-for-ninjaforms');?></p>
+        <p><?php echo esc_html_e('Bitcoin payment for Ninja Forms requires Ninja Forms to be installed and activated.','coinsnap-for-ninja-forms');?></p>
     </div>
     <?php        
-    }
+}
+
+// Go ninja, go ninja, go!
+NF_Coinsnap();
+
+add_filter( 'ninja_forms_upgrade_settings', 'NF_Coinsnap_Settings', 9999 );
+add_action('admin_init', 'check_nf_dependency' );
 
 function NF_Coinsnap_Settings( $data ){
     
@@ -342,7 +342,7 @@ function NF_Coinsnap_Settings( $data ){
 
         $new_action = array(
             'type' => 'coinsnap',
-            'label' => __( 'Coinsnap', 'coinsnap-for-ninjaforms' ),
+            'label' => __( 'Coinsnap', 'coinsnap-for-ninja-forms' ),
             'payment_gateways' => 'coinsnap',
             'coinsnap_description' => array(),
         );

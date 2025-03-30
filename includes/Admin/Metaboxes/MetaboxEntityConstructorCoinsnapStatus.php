@@ -2,11 +2,9 @@
 
 use NinjaForms\Includes\Entities\MetaboxOutputEntity;
 
-class NF_Coinsnap_Admin_Metaboxes_MetaboxEntityConstructorCoinsnapStatus
-{
+class NF_Coinsnap_Admin_Metaboxes_MetaboxEntityConstructorCoinsnapStatus {
 
-    public function handle($extraValue, $nfSub): ?MetaboxOutputEntity
-    {
+    public function handle($extraValue, $nfSub): ?MetaboxOutputEntity {
         $return = null;
 
         // If coinsnap_status is not set, return null to cancel output
@@ -17,16 +15,13 @@ class NF_Coinsnap_Admin_Metaboxes_MetaboxEntityConstructorCoinsnapStatus
         $labelValueCollection = self::extractResponses($nfSub);
 
         if (!empty($labelValueCollection)) {
-
             $array = [
-                'title' => __('Coinsnap Payment Details', 'coinsnap-for-ninjaforms'),
+                'title' => __('Coinsnap Payment Details', 'coinsnap-for-ninja-forms'),
                 'labelValueCollection' => $labelValueCollection
 
             ];
-
             $return = MetaboxOutputEntity::fromArray($array);
         }
-
         return $return;
     }
 
@@ -36,36 +31,30 @@ class NF_Coinsnap_Admin_Metaboxes_MetaboxEntityConstructorCoinsnapStatus
      * @param NF_Database_Models_Submission $nfSub
      * @return array
      */
-    protected static function extractResponses($nfSub): array
-    {
+    protected static function extractResponses($nfSub): array {
         $return = [];
 
         if ($nfSub->get_extra_value('coinsnap_status')) {
             $return[] = [
-                'label' => __("Payment Status", "coinsnap-for-ninjaforms"),
+                'label' => __("Payment Status", "coinsnap-for-ninja-forms"),
                 'value' => $nfSub->get_extra_value('coinsnap_status'),
                 'styling' => ''
             ];
         }
         if ($nfSub->get_extra_value('coinsnap_total')) {
             $return[] = [
-                'label' => __("Payment Total", "coinsnap-for-ninjaforms"),
+                'label' => __("Payment Total", "coinsnap-for-ninja-forms"),
                 'value' => $nfSub->get_extra_value('coinsnap_total'),
                 'styling' => ''
             ];
         }
         if ($nfSub->get_extra_value('coinsnap_transaction_id')) {
             $return[] = [
-                'label' => __("Transaction ID", "coinsnap-for-ninjaforms"),
+                'label' => __("Transaction ID", "coinsnap-for-ninja-forms"),
                 'value' => $nfSub->get_extra_value('coinsnap_transaction_id'),
                 'styling' => ''
             ];
         }
-        
-
-        
-
         return $return;
     }
-
 }
