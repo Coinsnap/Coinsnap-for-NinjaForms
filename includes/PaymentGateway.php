@@ -84,15 +84,6 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
         $currency = $this->get_currency( $data );
         $client =new \Coinsnap\Client\Invoice($this->getApiUrl(), $this->getApiKey());
         $checkInvoice = $client->checkPaymentData((float)$action_settings[ 'payment_total' ],strtoupper( $currency ));
-        $checkInvoiceError = array(
-            'amountError' => 'Invoice amount cannot be less than ',
-            'currencyError' => 'Currency is not supported by Coinsnap'
-        );
-        /*
-        if( $action_settings[ 'payment_total' ] <= 0 || NULL == $action_settings[ 'payment_total' ] ){
-            return $data;
-        }
-        */ 
         
         if($checkInvoice['result'] === true){
         
@@ -155,11 +146,18 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
         }
         
         else {
-            $errorMessage = $checkInvoiceError[$checkInvoice['error']];
-            if($checkInvoice['error'] == 'amountError'){
-                $errorMessage .= ' '.$checkInvoice['min_value'].' '.strtoupper( $currency );
+            if($checkInvoice['error'] === 'currencyError'){
+                $errorMessage = sprintf( 
+                /* translators: 1: Currency */
+                __( 'Currency %1$s is not supported by Coinsnap', 'coinsnap-for-ninja-forms' ), strtoupper( $currency ));
+            }      
+            elseif($checkInvoice['error'] === 'amountError'){
+                $errorMessage = sprintf( 
+                /* translators: 1: Amount, 2: Currency */
+                __( 'Invoice amount cannot be less than %1$s %2$s', 'coinsnap-for-ninja-forms' ), $checkInvoice['min_value'], strtoupper( $currency ));
             }
-            $data[ 'errors' ][ 'form' ][ 'coinsnap' ] = esc_html($errorMessage);
+            
+            $data['errors']['form']['coinsnap'] = $errorMessage;
             
         }
                 
