@@ -1,8 +1,4 @@
-<?php 
-
-if ( ! defined( 'ABSPATH' ) ){
-    exit;
-}
+<?php if ( ! defined( 'ABSPATH' ) ){ exit;}
 
 if( ! class_exists( 'NF_Abstracts_PaymentGateway' ) ){
     return;
@@ -11,7 +7,7 @@ if( ! class_exists( 'NF_Abstracts_PaymentGateway' ) ){
 /**
  * The Coinsnap payment gateway for the Collect Payment action.
  */
-class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
+class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
 {
     protected $_slug = 'coinsnap';
     public const WEBHOOK_EVENTS = ['New','Expired','Settled','Processing'];	 
@@ -115,7 +111,7 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
             $metadata['customerName'] = $buyerName;
 
             $camount = \Coinsnap\Util\PreciseNumber::parseFloat($payment_total,2);
-            $redirectAutomatically = ($this->getAutoRedirect() === 1)? true : false;
+            $redirectAutomatically = ($this->getAutoRedirect() == 1)? true : false;
             $walletMessage = '';
 
             $csinvoice = $client->createInvoice(
@@ -126,7 +122,7 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
                 $buyerEmail,
                 $buyerName, 
                 $return_url,
-                NF_Coinsnap::COINSNAP_REFERRAL_CODE,     
+                COINSNAPNF_REFERRAL_CODE,     
                 $metadata,
                 $redirectAutomatically,
                 $walletMessage
@@ -166,8 +162,8 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
 
     public function enqueue_scripts( $data )
     {        
-        wp_enqueue_script('nf-coinsnap-debug', NF_Coinsnap::$url . 'assets/js/debug.js', array( 'nf-front-end' ), NF_Coinsnap::VERSION );
-        wp_enqueue_script('nf-coinsnap-response', NF_Coinsnap::$url . 'assets/js/error-handler.js', array( 'nf-front-end' ), NF_Coinsnap::VERSION );
+        wp_enqueue_script('coinsnapnf-debug', CoinsnapNF::$url . 'assets/js/debug.js', array( 'nf-front-end' ), COINSNAPNF_VERSION, true );
+        wp_enqueue_script('coinsnapnf-response', CoinsnapNF::$url . 'assets/js/error-handler.js', array( 'nf-front-end' ), COINSNAPNF_VERSION, true );
     }
 
     private function is_success( $response )
@@ -296,4 +292,4 @@ class NF_Coinsnap_PaymentGateway extends NF_Abstracts_PaymentGateway
         }
     }    
 
-} // END CLASS NF_Coinsnap_PaymentGateway
+} // END CLASS CoinsnapNF_PaymentGateway

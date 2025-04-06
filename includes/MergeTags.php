@@ -1,13 +1,9 @@
-<?php
-
-if ( ! defined( 'ABSPATH' ) ){
-    exit;
-}
+<?php if ( ! defined( 'ABSPATH' ) ){ exit;}
 
 /**
- * Class NF_Coinsnap_MergeTags
+ * Class CoinsnapNF_MergeTags
  */
-final class NF_Coinsnap_MergeTags extends NF_Abstracts_MergeTags
+final class CoinsnapNF_MergeTags extends NF_Abstracts_MergeTags
 {
     protected $id = 'coinsnap';
 
@@ -38,4 +34,4 @@ final class NF_Coinsnap_MergeTags extends NF_Abstracts_MergeTags
         return $this->transaction_id;
     }
 
-} // END CLASS NF_Coinsnap_MergeTags
+} // END CLASS CoinsnapNF_MergeTags

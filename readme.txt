@@ -1,10 +1,8 @@
-=== Bitcoin payment for Ninja Forms ===
+=== Coinsnap for Ninja Forms ===
 
 Contributors: coinsnap
 Tags:  Coinsnap, Ninja Forms, Bitcoin, Lightning 
-Requires at least: 5.2
 Tested up to: 6.7
-Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html

@@ -1,11 +1,7 @@
-<?php 
-
-if ( ! defined( 'ABSPATH' ) ){
-    exit;
-}
+<?php if ( ! defined( 'ABSPATH' ) ){ exit;}
 
 /*
- * Plugin Name:     Bitcoin payment for Ninja Forms 
+ * Plugin Name:     Coinsnap for Ninja Forms 
  * Description:     Accept Bitcoin-Lightning payments with Ninja Forms
  * Version:         1.0.0
  * Author:          Coinsnap
@@ -15,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ){
  * Version:         1.0.0
  * Requires PHP:    7.4
  * Tested up to:    6.7
- * NF tested up to: 3.9.2
+ * NF tested up to: 3.10.0
  * Requires Plugins: ninja-forms
  * Requires at least: 6.0
  * License:         GPL2
@@ -24,22 +20,19 @@ if ( ! defined( 'ABSPATH' ) ){
  * Network:         true
  */
 
-if(!defined('COINSNAP_CURRENCIES')){
-    define( 'COINSNAP_CURRENCIES', array("EUR","USD","SATS","BTC","CAD","JPY","GBP","CHF","RUB") );
-}
+if(!defined('COINSNAPNF_REFERRAL_CODE')){ define( 'COINSNAPNF_REFERRAL_CODE', 'D17725' ); }
+if(!defined('COINSNAP_CURRENCIES')){ define( 'COINSNAP_CURRENCIES', array("EUR","USD","SATS","BTC","CAD","JPY","GBP","CHF","RUB") ); }
+if(!defined('COINSNAPNF_VERSION')){define( 'COINSNAPNF_VERSION', '1.0.0' );}
 
 /**
-* Class NF_Coinsnap
+* Class CoinsnapNF
 */
-final class NF_Coinsnap {
+final class CoinsnapNF {
         
-        const VERSION = '1.0.0';
         const SLUG    = 'coinsnap';
         const NAME    = 'Coinsnap';
         const AUTHOR  = 'Coinsnap';
-        const PREFIX  = 'NF_Coinsnap';
-        const COINSNAP_REFERRAL_CODE = 'D17725';
-
+        const PREFIX  = 'CoinsnapNF';
         
         private static $instance;        
         public static $dir = '';        
@@ -47,8 +40,8 @@ final class NF_Coinsnap {
         
         public static function instance()
         {
-            if (!isset(self::$instance) && !(self::$instance instanceof NF_Coinsnap)) {
-                self::$instance = new NF_Coinsnap();
+            if (!isset(self::$instance) && !(self::$instance instanceof CoinsnapNF)) {
+                self::$instance = new CoinsnapNF();
                 self::$dir = plugin_dir_path(__FILE__);
                 self::$url = plugin_dir_url(__FILE__);
                 spl_autoload_register(array(self::$instance, 'autoloader'));
@@ -66,7 +59,7 @@ final class NF_Coinsnap {
             add_filter('ninja_forms_new_form_templates', array( $this, 'register_templates' ) );
             add_filter('nf_react_table_extra_value_keys', array($this, 'addMetabox'));
             add_action('init', array($this, 'process_webhook')); 
-            add_action('admin_notices', array($this, 'coinsnap_notice'));
+            add_action('admin_notices', array($this, 'coinsnapnf_notice'));
             
             $page = (filter_input(INPUT_GET,'page',FILTER_SANITIZE_FULL_SPECIAL_CHARS ) !== null)? filter_input(INPUT_GET,'page',FILTER_SANITIZE_FULL_SPECIAL_CHARS ) : '';
             if($page === 'ninja-forms'){
@@ -75,16 +68,16 @@ final class NF_Coinsnap {
         }
         
         public function enqueueCoinsnapCSS(): void {
-            wp_enqueue_style( 'CoinsnapPayment', plugin_dir_url(__FILE__) . 'assets/css/coinsnap-style.css',array(),$this::VERSION );
+            wp_enqueue_style( 'CoinsnapPayment', plugin_dir_url(__FILE__) . 'assets/css/coinsnap-style.css',array(),COINSNAPNF_VERSION );
         }
         
-        public function coinsnap_notice(){
+        public function coinsnapnf_notice(){
             
             $page = (filter_input(INPUT_GET,'page',FILTER_SANITIZE_FULL_SPECIAL_CHARS ) !== null)? filter_input(INPUT_GET,'page',FILTER_SANITIZE_FULL_SPECIAL_CHARS ) : '';
             if($page === 'nf-settings' || $page === 'ninja-forms'){
                 $current_settings = Ninja_Forms()->get_settings();
                 
-                $CoinsnapPG = new NF_Coinsnap_PaymentGateway();
+                $CoinsnapPG = new CoinsnapNF_PaymentGateway();
                 $coinsnap_url = $CoinsnapPG->getApiUrl();
                 $coinsnap_api_key = (isset($current_settings['coinsnap_api_key']))? $current_settings['coinsnap_api_key'] : "";
                 $coinsnap_store_id = (isset($current_settings['coinsnap_store_id']))? $current_settings['coinsnap_store_id'] : "";
@@ -156,7 +149,7 @@ final class NF_Coinsnap {
                 return;
             }
             
-            $CoinsnapPG = new NF_Coinsnap_PaymentGateway();
+            $CoinsnapPG = new CoinsnapNF_PaymentGateway();
             $CoinsnapPG->webhook();
             
         }
@@ -164,39 +157,30 @@ final class NF_Coinsnap {
         public function addMetabox(array $metaboxHandlers): array
         {
             
-            $metaboxHandlers['coinsnap_status'] = 'NF_Coinsnap_Admin_Metaboxes_MetaboxEntityConstructorCoinsnapStatus';            
+            $metaboxHandlers['coinsnap_status'] = 'CoinsnapNF_Admin_Metaboxes_MetaboxEntityConstructorCoinsnapStatus';            
             return $metaboxHandlers;
         }
 
         
-        public function setup_admin()
-        {
+        public function setup_admin(){
          
-            Ninja_Forms()->merge_tags[ 'coinsnap' ] = new NF_Coinsnap_MergeTags();
-
-            if( ! is_admin() ) return;
-               
-            new NF_Coinsnap_Admin_Settings();
-            
-            new NF_Coinsnap_Admin_Metaboxes_Submission();
-            
+            Ninja_Forms()->merge_tags[ 'coinsnap' ] = new CoinsnapNF_MergeTags();
+            if( ! is_admin() ){ return; }               
+            new CoinsnapNF_Admin_Settings();            
+            new CoinsnapNF_Admin_Metaboxes_Submission();            
         }
-
         
-        public function register_payment_gateways($payment_gateways)
-        {
-            $payment_gateways[ 'coinsnap' ] = new NF_Coinsnap_PaymentGateway();
+        public function register_payment_gateways($payment_gateways){
+            $payment_gateways[ 'coinsnap' ] = new CoinsnapNF_PaymentGateway();
             return $payment_gateways;
         }
 
 	    
-	    public function register_actions( $actions ){	    	
-            
-		    $coinsnap_action = new NF_Actions_CollectPayment( __( 'Coinsnap', 'coinsnap-for-ninja-forms' ), 'coinsnap' );		    
-		    $actions[ 'coinsnap' ] = $coinsnap_action;
-
-		    return $actions;
-	    }
+        public function register_actions( $actions ){  	
+            $coinsnap_action = new NF_Actions_CollectPayment( __( 'Coinsnap', 'coinsnap-for-ninja-forms' ), 'coinsnap' );		    
+            $actions[ 'coinsnap' ] = $coinsnap_action;
+            return $actions;
+	}
 
                 
         public function register_templates( $templates ){
@@ -225,7 +209,6 @@ final class NF_Coinsnap {
         
         public function autoloader($class_name){
             if (class_exists($class_name)){ return; }
-
             if ( false === strpos( $class_name, self::PREFIX ) ){ return; }
 
             $class_name = str_replace( self::PREFIX, '', $class_name );
@@ -245,7 +228,7 @@ final class NF_Coinsnap {
         
         public static function template( $file_name = '', array $data = array() )
         {
-            if( ! $file_name ) return;
+            if( ! $file_name ){ return; }
             extract( $data );
 
             if( file_exists( self::$dir . 'includes/Templates/' . $file_name ) ) {
@@ -287,9 +270,9 @@ final class NF_Coinsnap {
 
 }
     
-function NF_Coinsnap(){        
+function CoinsnapNF(){        
     require_once (plugin_dir_path(__FILE__) . 'library/loader.php');	
-    return NF_Coinsnap::instance();
+    return CoinsnapNF::instance();
 }
 
 function check_nf_dependency(){        
@@ -307,12 +290,12 @@ function nf_dependency_notice(){?>
 }
 
 // Go ninja, go ninja, go!
-NF_Coinsnap();
+CoinsnapNF();
 
-add_filter( 'ninja_forms_upgrade_settings', 'NF_Coinsnap_Settings', 9999 );
+add_filter( 'ninja_forms_upgrade_settings', 'CoinsnapNF_Settings', 9999 );
 add_action('admin_init', 'check_nf_dependency' );
 
-function NF_Coinsnap_Settings( $data ){
+function CoinsnapNF_Settings( $data ){
     
     $plugin_settings = get_option( 'ninja_forms_coinsnap', array(        
         'store_id' => '',

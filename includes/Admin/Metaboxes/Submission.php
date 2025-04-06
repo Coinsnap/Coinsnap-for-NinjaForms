@@ -1,6 +1,6 @@
-<?php if ( ! defined( 'ABSPATH' ) ) exit;
+<?php if ( ! defined( 'ABSPATH' ) ){ exit;}
 
-final class NF_Coinsnap_Admin_Metaboxes_Submission extends NF_Abstracts_SubmissionMetabox
+final class CoinsnapNF_Admin_Metaboxes_Submission extends NF_Abstracts_SubmissionMetabox
 {
     public function __construct(){
         parent::__construct();
@@ -35,6 +35,6 @@ final class NF_Coinsnap_Admin_Metaboxes_Submission extends NF_Abstracts_Submissi
             __( 'Transaction ID', 'coinsnap-for-ninja-forms' ) => $transaction_id
         );
 
-        NF_Coinsnap::template( 'admin-metaboxes-submission.html.php', $data );
+        CoinsnapNF::template( 'admin-metaboxes-submission.html.php', $data );
     }
 }

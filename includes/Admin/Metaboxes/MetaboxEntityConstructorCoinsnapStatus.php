@@ -1,8 +1,8 @@
-<?php
+<?php if ( ! defined( 'ABSPATH' ) ){ exit;}
 
 use NinjaForms\Includes\Entities\MetaboxOutputEntity;
 
-class NF_Coinsnap_Admin_Metaboxes_MetaboxEntityConstructorCoinsnapStatus {
+class CoinsnapNF_Admin_Metaboxes_MetaboxEntityConstructorCoinsnapStatus {
 
     public function handle($extraValue, $nfSub): ?MetaboxOutputEntity {
         $return = null;

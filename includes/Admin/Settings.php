@@ -1,9 +1,9 @@
-<?php if ( ! defined( 'ABSPATH' ) ) exit;
+<?php if ( ! defined( 'ABSPATH' ) ){ exit;}
 
 /**
- * Class NF_Coinsnap_Admin_Settings
+ * Class CoinsnapNF_Admin_Settings
  */
-final class NF_Coinsnap_Admin_Settings {
+final class CoinsnapNF_Admin_Settings {
     
     public function __construct()
     {
@@ -13,14 +13,14 @@ final class NF_Coinsnap_Admin_Settings {
 
     public function plugin_settings( $settings )
     {
-        $settings[ 'coinsnap' ] = NF_Coinsnap()->config( 'PluginSettings' );
+        $settings[ 'coinsnap' ] = CoinsnapNF()->config( 'PluginSettings' );
         return $settings;
     }
 
     public function plugin_settings_groups( $groups )
     {
-        $groups = array_merge( $groups, NF_Coinsnap()->config( 'PluginSettingsGroups' ) );
+        $groups = array_merge( $groups, CoinsnapNF()->config( 'PluginSettingsGroups' ) );
         return $groups;
     }
 
-} // End Class NF_Coinsnap_Admin_Settings
+} // End Class CoinsnapNF_Admin_Settings
