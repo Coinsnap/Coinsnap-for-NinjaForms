@@ -1,13 +1,13 @@
-![Coinsnap for NinjaForms](https://resources.coinsnap.org/products/ninjaforms/images/cover.png)
+![Bitcoin payment for Ninja Forms](https://resources.coinsnap.org/products/ninjaforms/images/cover.png)
 
-# Coinsnap for NinjaForms payment plugin
+# Bitcoin payment for Ninja Forms
 
 * Contributors: coinsnap
 * Tags: Lightning, Lightning Payment, SATS, Satoshi sats, bitcoin, Wordpress, Ninja Forms, payment gateway, accept bitcoin, bitcoin plugin, bitcoin payment processor, bitcoin e-commerce, Lightning Network, cryptocurrency, lightning payment processor
 * Requires at least: 5.2
 * Tested up to: 6.7
 * Requires PHP: 7.4
-* Stable tag: 1.0.0
+* Stable tag: 1.0.1
 * License:         GPL2
 * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -157,7 +157,11 @@ For further information and frequently asked questions please go to: [https://co
 # Screenshot #
   
 # Changelog #
-= 1.0.0 :: 2024-07-08 =
-* Initial release. 
+
+#### 1.0.0 :: 2025-03-18 ####
+* Initial release.
+
+#### 1.0.1 :: 2025-04-29 ####
+* Fixed bug "Function _load_textdomain_just_in_time was called incorrectly".
 
 

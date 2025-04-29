@@ -12,13 +12,12 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
     protected $_slug = 'coinsnap';
     public const WEBHOOK_EVENTS = ['New','Expired','Settled','Processing'];	 
 
-    public function __construct()
-    {
+    public function __construct(){
         parent::__construct();
 
-        $this->_name = esc_html__( 'Coinsnap', 'coinsnap-for-ninja-forms' );
+        $this->_name = 'Coinsnap';
         add_action( 'ninja_forms_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-
+/*
         $this->_settings[ 'coinsnap_details' ] = array(
             'name' => 'coinsnap_details',
             'type' => 'textarea',
@@ -43,11 +42,11 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
             'deps' => array(
                 'payment_gateways' => $this->_slug
             ),
-            /* translators: 1: A note from the merchant to the buyer that will be displayed in the Coinsnap checkout window. */
+            /* translators: 1: A note from the merchant to the buyer that will be displayed in the Coinsnap checkout window. 
             'help' => sprintf( esc_html__( 'A note from the merchant to the buyer that will be displayed in the Coinsnap checkout window. Limit %1$s characters', 'coinsnap-for-ninja-forms' ), '165' ),
             'use_merge_tags' => TRUE
         );
-
+*/
     }
 
     public function webhook()
@@ -226,14 +225,14 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
     public function get_webhook_url($form_id) {		
         return get_site_url() . '/?nf-listener=coinsnap&form_id='.$form_id;
     }
-    public function getStoreId() {
+    public function getStoreId(){
         
         return Ninja_Forms()->get_setting( 'coinsnap_store_id' );
     }
-    public function getApiKey() {
+    public function getApiKey(){
         return Ninja_Forms()->get_setting( 'coinsnap_api_key' );
     }
-    public function getAutoRedirect() {
+    public function getAutoRedirect(){
         return Ninja_Forms()->get_setting( 'coinsnap_autoredirect' );
     }
     

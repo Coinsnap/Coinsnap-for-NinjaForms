@@ -1,9 +1,9 @@
-=== Coinsnap for Ninja Forms ===
+=== Bitcoin payment for Ninja Forms ===
 
 Contributors: coinsnap
-Tags:  Coinsnap, Ninja Forms, Bitcoin, Lightning 
-Tested up to: 6.7
-Stable tag: 1.0.0
+Tags:  Coinsnap, Ninja Forms, Bitcoin, Lightning, gateway 
+Tested up to: 6.8
+Stable tag: 1.0.1
 License: GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -100,7 +100,7 @@ Go to the **Settings** menu item in your Coinsnap merchant admin backend [https:
 
 Click on the “**Save changes**” button at the bottom of the page to apply and save the settings. You are ready to start selling for Bitcoin now: Just create a form with Coinsnap payment, and place it via the shortcode on your website. To activate Bitcoin payment in a form you are editing, click the tab **Emails & Actions** on the top, and activate **Coinsnap**.
 
-== YOU ARE SET TO SELL FOR BITCOIN NOW! To be sure all works fine, you should now... ==
+= YOU ARE SET TO SELL FOR BITCOIN NOW! To be sure all works fine, you should now... =
 
 = 1.3. Test the payment method in your Ninja Forms store =
 
@@ -111,7 +111,7 @@ Place an order in one of your Ninja Forms forms and click the black payment butt
 You will now be redirected to the Bitcoin-Lightning payment page to complete the purchase. The Bitcoin payment page is now displayed and offers the payer the option of paying with Bitcoin or Lightning. Both methods are integrated in the displayed QR code. After successful payment, the invoice can be viewed in detail.
 
 
-== 2. Install the Coinsnap Ninja Forms plugin from our Github page ==
+= 2. Install the Coinsnap Ninja Forms plugin from our Github page =
 
 If you don’t want to install Coinsnap Ninja Forms plugin directly from your WordPress backend, download the Coinsnap for Ninja Forms plugin from the [Coinsnap Github page here](https://github.com/Coinsnap/Coinsnap-for-NinjaForms/).
 
@@ -141,7 +141,7 @@ For further information and frequently asked questions please go to: [https://co
 2. NinjaForms Plugin for Wordpress
 3. Plugins list
 4. Ninja Forms Coinsnap Settings
-5. Coinsnap settingsPlugin downloading from Github repository
+5. Plugin downloading from Github repository
 6. Ninja forms list
 7. Ninja form edit
 8. Ninja form page
@@ -151,7 +151,8 @@ For further information and frequently asked questions please go to: [https://co
 12. QR code on the Bitcoin payment page
   
 == Changelog ==
-= 1.0.0 :: 2024-07-08 =
-* Initial release. 
+= 1.0.0 :: 2025-03-18 =
+* Initial release.
 
-
+= 1.0.1 :: 2025-04-29 =
+* Fixed bug "Function _load_textdomain_just_in_time was called incorrectly".
