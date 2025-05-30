@@ -17,40 +17,231 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
 
         $this->_name = 'Coinsnap';
         add_action( 'ninja_forms_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-/*
-        $this->_settings[ 'coinsnap_details' ] = array(
-            'name' => 'coinsnap_details',
-            'type' => 'textarea',
-            'placeholder' => '',
-            'value' => '',
-            'label' => __( 'Details', 'coinsnap-for-ninja-forms' ),
-            'width' => 'full',
-            'group' => 'advanced',
-            'deps'  => array(
-                'payment_gateways' => $this->_slug
-            ),
-            'help' => __( 'Extra information associated with the payment, such as shipping address, email, etc. This will be saved as Transaction Data in your Coinsnap Account.', 'coinsnap-for-ninja-forms' ),
-            'use_merge_tags' => TRUE
-        );
         
-        $this->_settings[ 'coinsnap_description' ] = array(
-            'name' => 'coinsnap_description',
-            'type' => 'textbox',
-            'label' => __( 'Note to Buyer', 'coinsnap-for-ninja-forms' ),
-            'width' => 'full',
-            'group' => 'advanced',
-            'deps' => array(
-                'payment_gateways' => $this->_slug
-            ),
-            /* translators: 1: A note from the merchant to the buyer that will be displayed in the Coinsnap checkout window. 
-            'help' => sprintf( esc_html__( 'A note from the merchant to the buyer that will be displayed in the Coinsnap checkout window. Limit %1$s characters', 'coinsnap-for-ninja-forms' ), '165' ),
-            'use_merge_tags' => TRUE
-        );
-*/
-    }
+        
+        if (is_admin()) {
+            add_action('admin_enqueue_scripts', [$this, 'enqueueAdminScripts'] );
+            add_action('wp_ajax_coinsnap_connection_handler', [$this, 'coinsnapConnectionHandler'] );
+            add_action('wp_ajax_btcpay_server_apiurl_handler', [$this, 'btcpayApiUrlHandler']);
+            
+        }
+        
+        // Adding template redirect handling for btcpay-settings-callback.
+        add_action( 'template_redirect', function(){
+            global $wp_query;
+            $notice = new \Coinsnap\Util\Notice();
 
-    public function webhook()
-    {
+            // Only continue on a btcpay-settings-callback request.
+            if (!isset( $wp_query->query_vars['btcpay-settings-callback'])) {
+                return;
+            }
+
+            $CoinsnapBTCPaySettingsUrl = admin_url('admin.php?page=nf-settings');
+
+            $rawData = file_get_contents('php://input');
+
+            $btcpay_server_url = Ninja_Forms()->get_setting( 'btcpay_server_url' );
+            $btcpay_api_key  = filter_input(INPUT_POST,'apiKey',FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+            $client = new \Coinsnap\Client\Store($btcpay_server_url,$btcpay_api_key);
+            if (count($client->getStores()) < 1) {
+                $messageAbort = __('Error on verifiying redirected API Key with stored BTCPay Server url. Aborting API wizard. Please try again or continue with manual setup.', 'coinsnap-for-ninja-forms');
+                $notice->addNotice('error', $messageAbort);
+                wp_redirect($CoinsnapBTCPaySettingsUrl);
+            }
+
+            // Data does get submitted with url-encoded payload, so parse $_POST here.
+            if (!empty($_POST) || wp_verify_nonce(filter_input(INPUT_POST,'wp_nonce',FILTER_SANITIZE_FULL_SPECIAL_CHARS),'-1')) {
+                $data['apiKey'] = filter_input(INPUT_POST,'apiKey',FILTER_SANITIZE_FULL_SPECIAL_CHARS) ?? null;
+                $permissions = (isset($_POST['permissions']) && is_array($_POST['permissions']))? $_POST['permissions'] : null;
+                if (isset($permissions)) {
+                    foreach ($permissions as $key => $value) {
+                        $data['permissions'][$key] = sanitize_text_field($permissions[$key] ?? null);
+                    }
+                }
+            }
+
+            if (isset($data['apiKey']) && isset($data['permissions'])) {
+
+                $apiData = new \Coinsnap\Client\BTCPayApiAuthorization($data);
+                if ($apiData->hasSingleStore() && $apiData->hasRequiredPermissions()) {
+
+                    Ninja_Forms()->update_setting('btcpay_api_key', $apiData->getApiKey());
+                    Ninja_Forms()->update_setting('btcpay_store_id', $apiData->getStoreID());
+                    Ninja_Forms()->update_setting('coinsnap_provider', 'btcpay');
+
+                    $notice->addNotice('success', __('Successfully received api key and store id from BTCPay Server API. Please finish setup by saving this settings form.', 'coinsnap-for-ninja-forms'));
+                    wp_redirect($CoinsnapBTCPaySettingsUrl);
+                    exit();
+                }
+                else {
+                    $notice->addNotice('error', __('Please make sure you only select one store on the BTCPay API authorization page.', 'coinsnap-for-ninja-forms'));
+                    wp_redirect($CoinsnapBTCPaySettingsUrl);
+                    exit();
+                }
+            }
+
+            $notice->addNotice('error', __('Error processing the data from Coinsnap. Please try again.', 'coinsnap-for-ninja-forms'));
+            wp_redirect($CoinsnapBTCPaySettingsUrl);
+        });
+    }
+    
+    public function enqueueAdminScripts(): void {
+        // Register the CSS file
+	wp_register_style( 'coinsnap-admin-styles', CoinsnapNF::$url . 'assets/css/coinsnap-style.css',array(),COINSNAPNF_VERSION);
+        // Enqueue the CSS file
+	wp_enqueue_style( 'coinsnap-admin-styles' );
+        wp_enqueue_script('coinsnapnf-admin-fields',CoinsnapNF::$url . 'assets/js/adminFields.js',[ 'jquery' ],COINSNAPNF_VERSION,true);
+        wp_enqueue_script('coinsnapnf-connection-check',CoinsnapNF::$url . 'assets/js/connectionCheck.js',[ 'jquery' ],COINSNAPNF_VERSION,true);
+        wp_localize_script('coinsnapnf-connection-check', 'coinsnap_ajax', array(
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce'  => wp_create_nonce( 'coinsnap-ajax-nonce' )
+        ));
+    }
+    
+    public function coinsnapConnectionHandler(){
+        
+        $_nonce = filter_input(INPUT_POST,'_wpnonce',FILTER_SANITIZE_STRING);
+        
+        if(empty($this->getApiUrl()) || empty($this->getApiKey())){
+            $response = [
+                    'result' => false,
+                    'message' => __('Ninja Forms: empty gateway URL or API Key', 'coinsnap-for-ninja-forms')
+            ];
+            $this->sendJsonResponse($response);
+        }
+        
+        $_provider = $this->get_payment_provider();
+        $client = new \Coinsnap\Client\Invoice($this->getApiUrl(),$this->getApiKey());
+        $store = new \Coinsnap\Client\Store($this->getApiUrl(),$this->getApiKey());
+        $currency = Ninja_Forms()->get_setting('currency');
+        
+        
+        if($_provider === 'btcpay'){
+            try {
+                $storePaymentMethods = $store->getStorePaymentMethods($this->getStoreId());
+
+                if ($storePaymentMethods['code'] === 200) {
+                    if($storePaymentMethods['result']['onchain'] && !$storePaymentMethods['result']['lightning']){
+                        $checkInvoice = $client->checkPaymentData(0,$currency,'bitcoin','calculation');
+                    }
+                    elseif($storePaymentMethods['result']['lightning']){
+                        $checkInvoice = $client->checkPaymentData(0,$currency,'lightning','calculation');
+                    }
+                }
+            }
+            catch (\Exception $e) {
+                $response = [
+                        'result' => false,
+                        'message' => __('Ninja Forms: API connection is not established', 'coinsnap-for-ninja-forms')
+                ];
+                $this->sendJsonResponse($response);
+            }
+        }
+        else {
+            $checkInvoice = $client->checkPaymentData(0,$currency,'coinsnap','calculation');
+        }
+        
+        if(isset($checkInvoice) && $checkInvoice['result']){
+            $connectionData = __('Min order amount is', 'coinsnap-for-ninja-forms') .' '. $checkInvoice['min_value'].' '.$currency;
+        }
+        else {
+            $connectionData = __('No payment method is configured', 'coinsnap-for-ninja-forms');
+        }
+        
+        $_message_disconnected = ($_provider !== 'btcpay')? 
+            __('Ninja Forms: Coinsnap server is disconnected', 'coinsnap-for-ninja-forms') :
+            __('Ninja Forms: BTCPay server is disconnected', 'coinsnap-for-ninja-forms');
+        $_message_connected = ($_provider !== 'btcpay')?
+            __('Ninja Forms: Coinsnap server is connected', 'coinsnap-for-ninja-forms') : 
+            __('Ninja Forms: BTCPay server is connected', 'coinsnap-for-ninja-forms');
+        
+        if( wp_verify_nonce($_nonce,'coinsnap-ajax-nonce') ){
+            
+            $response = ['result' => true,'message' => $_message_connected.' ('.$connectionData.')'];
+
+            try {
+                $this_store = $store->getStore($this->getStoreId());
+                
+                if ($this_store['code'] !== 200) {
+                    $response = ['result' => false,'message' => $_message_disconnected];
+                    $this->sendJsonResponse($response);
+                }
+            }
+            catch (\Exception $e) {
+                $response = ['result' => false,'message' => __('Ninja Forms: API connection is not established', 'coinsnap-for-ninja-forms')];
+            }
+
+            $this->sendJsonResponse($response);
+        }      
+    }
+    
+    private function sendJsonResponse(array $response): void {
+        echo wp_json_encode($response);
+        exit();
+    }
+    
+    public function enqueue_scripts( $data )
+    {        
+        wp_enqueue_script('coinsnapnf-debug', CoinsnapNF::$url . 'assets/js/debug.js', array( 'nf-front-end' ), COINSNAPNF_VERSION, true );
+        wp_enqueue_script('coinsnapnf-response', CoinsnapNF::$url . 'assets/js/error-handler.js', array( 'nf-front-end' ), COINSNAPNF_VERSION, true );
+    }
+    
+    
+        /**
+     * Handles the BTCPay server AJAX callback from the settings form.
+     */
+    public function btcpayApiUrlHandler() {
+        $_nonce = filter_input(INPUT_POST,'apiNonce',FILTER_SANITIZE_STRING);
+        if ( !wp_verify_nonce( $_nonce, 'coinsnap-ajax-nonce' ) ) {
+            wp_die('Unauthorized!', '', ['response' => 401]);
+        }
+        
+        if ( current_user_can( 'manage_options' ) ) {
+            $host = filter_var(filter_input(INPUT_POST,'host',FILTER_SANITIZE_STRING), FILTER_VALIDATE_URL);
+
+            if ($host === false || (substr( $host, 0, 7 ) !== "http://" && substr( $host, 0, 8 ) !== "https://")) {
+                wp_send_json_error("Error validating BTCPayServer URL.");
+            }
+
+            $permissions = array_merge([
+		'btcpay.store.canviewinvoices',
+		'btcpay.store.cancreateinvoice',
+		'btcpay.store.canviewstoresettings',
+		'btcpay.store.canmodifyinvoices'
+            ],
+            [
+		'btcpay.store.cancreatenonapprovedpullpayments',
+		'btcpay.store.webhooks.canmodifywebhooks',
+            ]);
+
+            try {
+		// Create the redirect url to BTCPay instance.
+		$url = \Coinsnap\Client\BTCPayApiKey::getAuthorizeUrl(
+                    $host,
+                    $permissions,
+                    'NinjaForms',
+                    true,
+                    true,
+                    home_url('?btcpay-settings-callback'),
+                    null
+		);
+
+		// Store the host to options before we leave the site.
+		Ninja_Forms()->update_setting( 'btcpay_server_url' , $host);
+
+		// Return the redirect url.
+		wp_send_json_success(['url' => $url]);
+            }
+            
+            catch (\Throwable $e) {
+                
+            }
+	}
+        wp_send_json_error("Error processing Ajax request.");
+    }    
+
+    public function webhook(){
         $notify_json = file_get_contents('php://input');
         $notify_ar = json_decode($notify_json, true);
         $form_id = filter_input(INPUT_GET,'form_id',FILTER_VALIDATE_INT);
@@ -73,12 +264,58 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
 
     }
 
+    function coinsnapgf_amount_validation( $amount, $currency ) {
+        $client =new \Coinsnap\Client\Invoice($this->getApiUrl(), $this->getApiKey());
+        $store = new \Coinsnap\Client\Store($this->getApiUrl(), $this->getApiKey());
+        
+        try {
+            $this_store = $store->getStore($this->getStoreId());
+            $_provider = $this->get_payment_provider();
+            if($_provider === 'btcpay'){
+                try {
+                    $storePaymentMethods = $store->getStorePaymentMethods($this->getStoreId());
+
+                    if ($storePaymentMethods['code'] === 200) {
+                        if(!$storePaymentMethods['result']['onchain'] && !$storePaymentMethods['result']['lightning']){
+                            $errorMessage = __( 'No payment method is configured on BTCPay server', 'coinsnap-for-gravity-forms' );
+                            $checkInvoice = array('result' => false,'error' => esc_html($errorMessage));
+                        }
+                    }
+                    else {
+                        $errorMessage = __( 'Error store loading. Wrong or empty Store ID', 'coinsnap-for-gravity-forms' );
+                        $checkInvoice = array('result' => false,'error' => esc_html($errorMessage));
+                    }
+
+                    if($storePaymentMethods['result']['onchain'] && !$storePaymentMethods['result']['lightning']){
+                        $checkInvoice = $client->checkPaymentData((float)$amount,strtoupper( $currency ),'bitcoin');
+                    }
+                    elseif($storePaymentMethods['result']['lightning']){
+                        $checkInvoice = $client->checkPaymentData((float)$amount,strtoupper( $currency ),'lightning');
+                    }
+                }
+                catch (\Throwable $e){
+                    $errorMessage = __( 'API connection is not established', 'coinsnap-for-gravity-forms' );
+                    $checkInvoice = array('result' => false,'error' => esc_html($errorMessage));
+                }
+            }
+            else {
+                $checkInvoice = $client->checkPaymentData((float)$amount,strtoupper( $currency ));
+            }
+        }
+        catch (\Throwable $e){
+            $errorMessage = __( 'API connection is not established', 'coinsnap-for-gravity-forms' );
+            $checkInvoice = array('result' => false,'error' => esc_html($errorMessage));
+        }
+        return $checkInvoice;
+    }
     
     public function process( $action_settings, $form_id, $data ){
         
-        $currency = $this->get_currency( $data );
         $client =new \Coinsnap\Client\Invoice($this->getApiUrl(), $this->getApiKey());
-        $checkInvoice = $client->checkPaymentData((float)$action_settings[ 'payment_total' ],strtoupper( $currency ));
+        $currency = $this->get_currency( $data );
+        $amount = (float)$action_settings[ 'payment_total' ];
+        
+        $checkInvoice = $this->coinsnapnf_amount_validation($amount,strtoupper( $currency ));
         
         if($checkInvoice['result'] === true){
         
@@ -91,14 +328,6 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
             }
 
             $webhook_url = $this->get_webhook_url($form_id);
-
-            if (! $this->webhookExists($this->getStoreId(), $this->getApiKey(), $webhook_url)){
-                if (! $this->registerWebhook($this->getStoreId(), $this->getApiKey(), $webhook_url)) {                
-                    echo (esc_html__('Unable to set Webhook url.', 'coinsnap-for-ninja-forms'));
-                    exit;
-                }
-            }      
-
             
             $invoice_no = $this->get_sub_id( $data );
             $first_name = $this->get_nf_data($data, 'firstname');
@@ -112,31 +341,39 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
             $camount = \Coinsnap\Util\PreciseNumber::parseFloat($payment_total,2);
             $redirectAutomatically = ($this->getAutoRedirect() == 1)? true : false;
             $walletMessage = '';
+            
+            try {
 
-            $csinvoice = $client->createInvoice(
-                $this->getStoreId(),  
-                strtoupper( $currency ),
-                $camount,
-                $invoice_no,
-                $buyerEmail,
-                $buyerName, 
-                $return_url,
-                COINSNAPNF_REFERRAL_CODE,     
-                $metadata,
-                $redirectAutomatically,
-                $walletMessage
-            );
+                $csinvoice = $client->createInvoice(
+                    $this->getStoreId(),  
+                    strtoupper( $currency ),
+                    $camount,
+                    $invoice_no,
+                    $buyerEmail,
+                    $buyerName, 
+                    $return_url,
+                    COINSNAPNF_REFERRAL_CODE,     
+                    $metadata,
+                    $redirectAutomatically,
+                    $walletMessage
+                );
 
+                $payurl = $csinvoice->getData()['checkoutLink'] ;   
+                if (isset($payurl)){
+                    $data[ 'halt' ] = TRUE;
+                    $data[ 'actions' ][ 'redirect' ] = $payurl;
 
-            $payurl = $csinvoice->getData()['checkoutLink'] ;   
-            if (isset($payurl)){
-                $data[ 'halt' ] = TRUE;
-                $data[ 'actions' ][ 'redirect' ] = $payurl;
-
-                $this->update_submission( $this->get_sub_id( $data ), array(
-                    'coinsnap_status' => esc_html__( 'Pending', 'coinsnap-for-ninja-forms' ),
-                    'coinsnap_total' => $payment_total
-                ) );    
+                    $this->update_submission( $this->get_sub_id( $data ), array(
+                        'coinsnap_status' => esc_html__( 'Pending', 'coinsnap-for-ninja-forms' ),
+                        'coinsnap_total' => $payment_total
+                    ) );    
+                }
+            
+            }
+            catch (\Throwable $e){
+                $errorMessage = __( 'API connection is not established', 'coinsnap-for-ninja-forms' );
+                $data['errors']['form']['coinsnap'] = $errorMessage;
+                return $data;
             }
         }
         
@@ -151,20 +388,16 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
                 /* translators: 1: Amount, 2: Currency */
                 __( 'Invoice amount cannot be less than %1$s %2$s', 'coinsnap-for-ninja-forms' ), $checkInvoice['min_value'], strtoupper( $currency ));
             }
-            
+            else {
+                $errorMessage = $checkInvoice['error'];
+            }
             $data['errors']['form']['coinsnap'] = $errorMessage;
-            
         }
                 
         return $data;
     }
 
-    public function enqueue_scripts( $data )
-    {        
-        wp_enqueue_script('coinsnapnf-debug', CoinsnapNF::$url . 'assets/js/debug.js', array( 'nf-front-end' ), COINSNAPNF_VERSION, true );
-        wp_enqueue_script('coinsnapnf-response', CoinsnapNF::$url . 'assets/js/error-handler.js', array( 'nf-front-end' ), COINSNAPNF_VERSION, true );
-    }
-
+    
     private function is_success( $response )
     {
         if( ! is_array( $response ) ){ return FALSE; }
@@ -217,27 +450,33 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
 
     public function get_nf_data($data, $key) {		
         foreach ($data['fields_by_key'] as $row){
-          if ($row['settings']['type'] == $key) return $row['value'];
+            if ($row['settings']['type'] == $key){ return $row['value']; }
         }
         return '';
+    }
+    
+    public function get_payment_provider() {
+        return (Ninja_Forms()->get_setting( 'coinsnap_provider') === 'btcpay')? 'btcpay' : 'coinsnap';
     }
 
     public function get_webhook_url($form_id) {		
         return get_site_url() . '/?nf-listener=coinsnap&form_id='.$form_id;
     }
+    
     public function getStoreId(){
-        
-        return Ninja_Forms()->get_setting( 'coinsnap_store_id' );
+        return ($this->get_payment_provider() === 'btcpay')? Ninja_Forms()->get_setting( 'btcpay_store_id' ) : Ninja_Forms()->get_setting( 'coinsnap_store_id' );
     }
+    
     public function getApiKey(){
-        return Ninja_Forms()->get_setting( 'coinsnap_api_key' );
+        return ($this->get_payment_provider() === 'btcpay')? Ninja_Forms()->get_setting( 'btcpay_api_key' ) : Ninja_Forms()->get_setting( 'coinsnap_api_key' );
     }
+    
     public function getAutoRedirect(){
         return Ninja_Forms()->get_setting( 'coinsnap_autoredirect' );
     }
     
     public function getApiUrl() {
-        return 'https://app.coinsnap.io';
+        return ($this->get_payment_provider() === 'btcpay')? Ninja_Forms()->get_setting( 'btcpay_server_url' ) : COINSNAP_SERVER_URL;
     }	
 
     public function webhookExists(string $storeId, string $apiKey, string $webhook): bool {	

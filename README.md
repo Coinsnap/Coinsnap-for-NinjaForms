@@ -7,7 +7,7 @@
 * Requires at least: 5.2
 * Tested up to: 6.7
 * Requires PHP: 7.4
-* Stable tag: 1.0.1
+* Stable tag: 1.1.0
 * License:         GPL2
 * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -158,10 +158,15 @@ For further information and frequently asked questions please go to: [https://co
   
 # Changelog #
 
-#### 1.0.0 :: 2025-03-18 ####
+#### 1.0.0 :: 2025-03-18
 * Initial release.
 
-#### 1.0.1 :: 2025-04-29 ####
+#### 1.0.1 :: 2025-04-29
 * Fixed bug "Function _load_textdomain_just_in_time was called incorrectly".
 
-
+#### 1.1.0 :: 2025-05-30
+* Update: Coinsnap Wordpress library.
+* Update: BTCPay server added as a Bitcoin payment gateway
+* Update: Prevented redirect to BTCPay server if payment amount is less than 0.000005869 BTC (0.50 EUR) for onchain payments, 0.000001 BTC (1 SAT) for Lightning payment or currency is not supported.
+* Update: BTCPay setup wizard is added in BTCPay server settings.
+* Update: Minimum order amount is added to connection status notice.
