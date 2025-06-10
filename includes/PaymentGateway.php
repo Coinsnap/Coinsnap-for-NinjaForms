@@ -264,7 +264,7 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
 
     }
 
-    function coinsnapgf_amount_validation( $amount, $currency ) {
+    function coinsnapnf_amount_validation( $amount, $currency ) {
         $client =new \Coinsnap\Client\Invoice($this->getApiUrl(), $this->getApiKey());
         $store = new \Coinsnap\Client\Store($this->getApiUrl(), $this->getApiKey());
         
@@ -277,12 +277,12 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
 
                     if ($storePaymentMethods['code'] === 200) {
                         if(!$storePaymentMethods['result']['onchain'] && !$storePaymentMethods['result']['lightning']){
-                            $errorMessage = __( 'No payment method is configured on BTCPay server', 'coinsnap-for-gravity-forms' );
+                            $errorMessage = __( 'No payment method is configured on BTCPay server', 'coinsnap-for-ninja-forms' );
                             $checkInvoice = array('result' => false,'error' => esc_html($errorMessage));
                         }
                     }
                     else {
-                        $errorMessage = __( 'Error store loading. Wrong or empty Store ID', 'coinsnap-for-gravity-forms' );
+                        $errorMessage = __( 'Error store loading. Wrong or empty Store ID', 'coinsnap-for-ninja-forms' );
                         $checkInvoice = array('result' => false,'error' => esc_html($errorMessage));
                     }
 
@@ -294,7 +294,7 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
                     }
                 }
                 catch (\Throwable $e){
-                    $errorMessage = __( 'API connection is not established', 'coinsnap-for-gravity-forms' );
+                    $errorMessage = __( 'API connection is not established', 'coinsnap-for-ninja-forms' );
                     $checkInvoice = array('result' => false,'error' => esc_html($errorMessage));
                 }
             }
@@ -303,7 +303,7 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
             }
         }
         catch (\Throwable $e){
-            $errorMessage = __( 'API connection is not established', 'coinsnap-for-gravity-forms' );
+            $errorMessage = __( 'API connection is not established', 'coinsnap-for-ninja-forms' );
             $checkInvoice = array('result' => false,'error' => esc_html($errorMessage));
         }
         return $checkInvoice;
