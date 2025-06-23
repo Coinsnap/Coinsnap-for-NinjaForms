@@ -12,7 +12,7 @@
  * Tested up to:    6.8
  * Requires at least: 6.0
  * Requires Plugins: ninja-forms
- * NF tested up to: 3.10.1
+ * NF tested up to: 3.10.2.1
  * License:         GPL2
  * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -21,7 +21,7 @@
 
 if(!defined( 'ABSPATH' ) ){ exit;}
 if(!defined('COINSNAPNF_REFERRAL_CODE')){ define( 'COINSNAPNF_REFERRAL_CODE', 'D17725' ); }
-if(!defined('COINSNAPNF_VERSION')){define( 'COINSNAPNF_VERSION', '1.1.0' );}
+if(!defined('COINSNAPNF_VERSION')){define( 'COINSNAPNF_VERSION', '1.2.0' );}
 if(!defined('COINSNAPNF_PLUGIN_ID')){define( 'COINSNAPNF_PLUGIN_ID', 'coinsnap-for-ninja-forms' );}
 if(!defined('COINSNAP_SERVER_URL')){define( 'COINSNAP_SERVER_URL', 'https://app.coinsnap.io' );}
 if(!defined('COINSNAP_API_PATH')){define( 'COINSNAP_API_PATH', '/api/v1/');}
@@ -108,10 +108,8 @@ final class CoinsnapNF {
                         
                         if($form_id > 0){
                             
-                            $coinsnap_webhook_url = $CoinsnapPG->get_webhook_url($form_id);
-                            
-                            if ( ! $CoinsnapPG->webhookExists( $coinsnap_store_id, $coinsnap_api_key, $coinsnap_webhook_url ) ) {
-                                if ( ! $CoinsnapPG->registerWebhook( $coinsnap_store_id, $coinsnap_api_key, $coinsnap_webhook_url ) ) {
+                            if ( ! $CoinsnapPG->webhookExists( $coinsnap_url, $coinsnap_api_key, $coinsnap_store_id ) ) {
+                                if ( ! $CoinsnapPG->registerWebhook( $coinsnap_url, $coinsnap_api_key, $coinsnap_store_id ) ) {
                                     echo '<div class="notice notice-error is-dismissible"><p>';
                                     esc_html_e('Unable to create webhook on Coinsnap Server', 'coinsnap-for-ninja-forms');
                                     echo '</p></div>';
@@ -249,13 +247,13 @@ add_action('init', function() {
     }
     
 // Setting up and handling custom endpoint for api key redirect from BTCPay Server.
-    add_rewrite_endpoint('btcpay-settings-callback', EP_ROOT);
+    add_rewrite_endpoint('coinsnap-for-ninja-forms-btcpay-settings-callback', EP_ROOT);
 });
 
 // To be able to use the endpoint without appended url segments we need to do this.
 add_filter('request', function($vars) {
-    if (isset($vars['btcpay-settings-callback'])) {
-        $vars['btcpay-settings-callback'] = true;
+    if (isset($vars['coinsnap-for-ninja-forms-btcpay-settings-callback'])) {
+        $vars['coinsnap-for-ninja-forms-btcpay-settings-callback'] = true;
     }
     return $vars;
 });

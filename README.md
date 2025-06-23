@@ -5,9 +5,9 @@
 * Contributors: coinsnap
 * Tags: Lightning, Lightning Payment, SATS, Satoshi sats, bitcoin, Wordpress, Ninja Forms, payment gateway, accept bitcoin, bitcoin plugin, bitcoin payment processor, bitcoin e-commerce, Lightning Network, cryptocurrency, lightning payment processor
 * Requires at least: 5.2
-* Tested up to: 6.7
+* Tested up to: 6.8
 * Requires PHP: 7.4
-* Stable tag: 1.1.0
+* Stable tag: 1.2.0
 * License:         GPL2
 * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -170,3 +170,9 @@ For further information and frequently asked questions please go to: [https://co
 * Update: Prevented redirect to BTCPay server if payment amount is less than 0.000005869 BTC (0.50 EUR) for onchain payments, 0.000001 BTC (1 SAT) for Lightning payment or currency is not supported.
 * Update: BTCPay setup wizard is added in BTCPay server settings.
 * Update: Minimum order amount is added to connection status notice.
+
+#### 1.2.0 :: 2025-06-23
+* Update: Unique name for BTCPay server setup Wizard return URL is set.
+* Update: Webhook data is saved as setting in Wordpress database.
+* Update: Added secret string check in webhook payload process.
+* Compatibility with Ninja Forms Plugin 3.10.2 is tested.

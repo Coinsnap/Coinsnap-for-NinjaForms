@@ -4,6 +4,7 @@ if( ! class_exists( 'NF_Abstracts_PaymentGateway' ) ){
     return;
 }
 
+use Coinsnap\Client\Webhook;
 /**
  * The Coinsnap payment gateway for the Collect Payment action.
  */
@@ -26,13 +27,13 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
             
         }
         
-        // Adding template redirect handling for btcpay-settings-callback.
+        // Adding template redirect handling for coinsnap-for-ninja-forms-btcpay-settings-callback.
         add_action( 'template_redirect', function(){
             global $wp_query;
             $notice = new \Coinsnap\Util\Notice();
 
-            // Only continue on a btcpay-settings-callback request.
-            if (!isset( $wp_query->query_vars['btcpay-settings-callback'])) {
+            // Only continue on a coinsnap-for-ninja-forms-btcpay-settings-callback request.
+            if (!isset( $wp_query->query_vars['coinsnap-for-ninja-forms-btcpay-settings-callback'])) {
                 return;
             }
 
@@ -91,7 +92,11 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
 	wp_register_style( 'coinsnap-admin-styles', CoinsnapNF::$url . 'assets/css/coinsnap-style.css',array(),COINSNAPNF_VERSION);
         // Enqueue the CSS file
 	wp_enqueue_style( 'coinsnap-admin-styles' );
-        wp_enqueue_script('coinsnapnf-admin-fields',CoinsnapNF::$url . 'assets/js/adminFields.js',[ 'jquery' ],COINSNAPNF_VERSION,true);
+        
+        if('nf-settings' === filter_input(INPUT_GET,'page',FILTER_SANITIZE_FULL_SPECIAL_CHARS)){
+            wp_enqueue_script('coinsnapnf-admin-fields',CoinsnapNF::$url . 'assets/js/adminFields.js',[ 'jquery' ],COINSNAPNF_VERSION,true);
+        }
+        
         wp_enqueue_script('coinsnapnf-connection-check',CoinsnapNF::$url . 'assets/js/connectionCheck.js',[ 'jquery' ],COINSNAPNF_VERSION,true);
         wp_localize_script('coinsnapnf-connection-check', 'coinsnap_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
@@ -223,7 +228,7 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
                     'NinjaForms',
                     true,
                     true,
-                    home_url('?btcpay-settings-callback'),
+                    home_url('?coinsnap-for-ninja-forms-btcpay-settings-callback'),
                     null
 		);
 
@@ -242,27 +247,78 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
     }    
 
     public function webhook(){
-        $notify_json = file_get_contents('php://input');
-        $notify_ar = json_decode($notify_json, true);
+        
+        //  nf-listener get parameter check
+        if ( null === ( filter_input(INPUT_GET,'nf-listener') ) || filter_input(INPUT_GET,'nf-listener') !== 'coinsnap' ) {
+            return;
+        }
+        //  form_id get parameter check
         $form_id = filter_input(INPUT_GET,'form_id',FILTER_VALIDATE_INT);
-        $invoice_id = $notify_ar['invoiceId'];
-
+        if ( $form_id < 1 ) {
+            return;
+        }
+        
         try {
+            // First check if we have any input
+            $rawPostData = file_get_contents("php://input");
+            if (!$rawPostData) {
+                wp_die('No raw post data received', '', ['response' => 400]);
+            }
+
+            // Get headers and check for signature
+            $headers = getallheaders();
+            $signature = null; $payloadKey = null;
+            $_provider = ($this->get_payment_provider() === 'btcpay')? 'btcpay' : 'coinsnap';
+                
+            foreach ($headers as $key => $value) {
+                if ((strtolower($key) === 'x-coinsnap-sig' && $_provider === 'coinsnap') || (strtolower($key) === 'btcpay-sig' && $_provider === 'btcpay')) {
+                        $signature = $value;
+                        $payloadKey = strtolower($key);
+                }
+            }
+
+            // Handle missing or invalid signature
+            if (!isset($signature)) {
+                wp_die('Authentication required', '', ['response' => 401]);
+            }
+
+            // Validate the signature
+            $webhook = get_option( 'ninja_forms_settings_coinsnap_webhook_'.$form_id);
+            if (!Webhook::isIncomingWebhookRequestValid($rawPostData, $signature, $webhook['secret'])) {
+                wp_die('Invalid authentication signature', '', ['response' => 401]);
+            }
+
+            // Parse the JSON payload
+            $postData = json_decode($rawPostData, false, 512, JSON_THROW_ON_ERROR);
+
+            if (!isset($postData->invoiceId)) {
+                wp_die('No Coinsnap invoiceId provided', '', ['response' => 400]);
+            }
+            
+            $invoice_id = $postData->invoiceId;
+            
+            if(strpos($invoice_id,'test_') !== false){
+                wp_die('Successful webhook test', '', ['response' => 200]);
+            }
+            
             $client = new \Coinsnap\Client\Invoice( $this->getApiUrl(), $this->getApiKey() );			
             $csinvoice = $client->getInvoice($this->getStoreId(), $invoice_id);
             $status = $csinvoice->getData()['status'] ;
-            $order_id = $csinvoice->getData()['orderId'] ;				
+            $order_id = $csinvoice->getData()['orderId'] ;
+            
+            $this->update_submission( $order_id, array('coinsnap_status' => $status, 'coinsnap_transaction_id' => $invoice_id ) );       
+            echo "OK";
+            exit;
         
-        }catch (\Throwable $e) {													
-                echo "Error";
-                exit;
         }
-                
-        $this->update_submission( $order_id, array('coinsnap_status' => $status, 'coinsnap_transaction_id' => $invoice_id ) );       
-        echo "OK";
-        exit;
-
+        catch (JsonException $e) {
+            wp_die('Invalid JSON payload', '', ['response' => 400]);
+        }
+        catch (\Throwable $e) {
+            wp_die('Internal server error', '', ['response' => 500]);
+        }        
     }
+        
 
     function coinsnapnf_amount_validation( $amount, $currency ) {
         $client =new \Coinsnap\Client\Invoice($this->getApiUrl(), $this->getApiKey());
@@ -398,16 +454,14 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
     }
 
     
-    private function is_success( $response )
-    {
+    private function is_success( $response ){
         if( ! is_array( $response ) ){ return FALSE; }
         if( ! in_array( $response[ 'ACK' ], array( 'Success', 'SuccessWithWarning' ) ) ){ return FALSE; }
         return TRUE;
     }
 
     
-    private function update_submission( $sub_id, $data = array() )
-    {
+    private function update_submission( $sub_id, $data = array()){
         if( ! $sub_id ) return;
 
         $sub = Ninja_Forms()->form()->sub( $sub_id )->get();
@@ -479,55 +533,96 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
         return ($this->get_payment_provider() === 'btcpay')? Ninja_Forms()->get_setting( 'btcpay_server_url' ) : COINSNAP_SERVER_URL;
     }	
 
-    public function webhookExists(string $storeId, string $apiKey, string $webhook): bool {	
-        try {		
-            $whClient = new \Coinsnap\Client\Webhook( $this->getApiUrl(), $apiKey );		
-            $Webhooks = $whClient->getWebhooks( $storeId );
-            
-            foreach ($Webhooks as $Webhook){					
-                //self::deleteWebhook($storeId,$apiKey, $Webhook->getData()['id']);
-                if ($Webhook->getData()['url'] == $webhook) return true;
-            }
-        }catch (\Throwable $e) {			
-            return false;
-        }
-    
-        return false;
-    }
-    
-    public  function registerWebhook(string $storeId, string $apiKey, string $webhook): bool {	
-        try {			
-            $whClient = new \Coinsnap\Client\Webhook($this->getApiUrl(), $apiKey);
-            
-            $webhook = $whClient->createWebhook(
-                $storeId,   //$storeId
-                $webhook, //$url
-                self::WEBHOOK_EVENTS,   
-                null    //$secret
-            );		
-            
-            return true;
-        } catch (\Throwable $e) {
-            return false;	
-        }
-
-        return false;
-    }
-
-    public function deleteWebhook(string $storeId, string $apiKey, string $webhookid): bool {	    
+    public function webhookExists(string $apiUrl, string $apiKey, string $storeId): bool {
         
-        try {			
-            $whClient = new \Coinsnap\Client\Webhook($this->getApiUrl(), $apiKey);
-            
-            $webhook = $whClient->deleteWebhook(
-                $storeId,   //$storeId
-                $webhookid, //$url			
-            );					
-            return true;
-        } catch (\Throwable $e) {
-            
-            return false;	
+        $form_id = filter_input(INPUT_GET,'form_id',FILTER_VALIDATE_INT);
+        if($form_id > 0){
+        
+            $whClient = new Webhook( $apiUrl, $apiKey );
+            if ($storedWebhook = get_option( 'ninja_forms_settings_coinsnap_webhook_'.$form_id)) {
+
+                try {
+                    $existingWebhook = $whClient->getWebhook( $storeId, $storedWebhook['id'] );
+
+                    if($existingWebhook->getData()['id'] === $storedWebhook['id'] && strpos( $existingWebhook->getData()['url'], $storedWebhook['url'] ) !== false){
+                        return true;
+                    }
+                }
+                catch (\Throwable $e) {
+                    $errorMessage = __( 'Error fetching existing Webhook. Message: ', 'coinsnap-for-ninja-forms' ).$e->getMessage();
+                    $data['errors']['form']['coinsnap'] = esc_html($errorMessage);
+                }
+            }
+            try {
+                $storeWebhooks = $whClient->getWebhooks( $storeId );
+                foreach($storeWebhooks as $webhook){
+                    if(strpos( $webhook->getData()['url'], $this->get_webhook_url($form_id) ) !== false){
+                        $whClient->deleteWebhook( $storeId, $webhook->getData()['id'] );
+                    }
+                }
+            }
+            catch (\Throwable $e) {
+                $errorMessage = sprintf( 
+                    /* translators: 1: StoreId */
+                    __( 'Error fetching webhooks for store ID %1$s Message: ', 'coinsnap-for-ninja-forms' ), $storeId).$e->getMessage();
+                $data['errors']['form']['coinsnap'] = esc_html($errorMessage);
+            }
         }
+	return false;
+    }
+    
+    public function registerWebhook(string $apiUrl, $apiKey, $storeId){
+        
+        $form_id = filter_input(INPUT_GET,'form_id',FILTER_VALIDATE_INT);
+        if($form_id > 0){
+        
+            try {
+                $whClient = new Webhook( $apiUrl, $apiKey );
+                $webhook = $whClient->createWebhook(
+                    $storeId,   //$storeId
+                    $this->get_webhook_url($form_id), //$url
+                    self::WEBHOOK_EVENTS,   //$specificEvents
+                    null    //$secret
+                );
+
+                update_option(
+                    'ninja_forms_settings_coinsnap_webhook_'.$form_id,
+                    [
+                        'id' => $webhook->getData()['id'],
+                        'secret' => $webhook->getData()['secret'],
+                        'url' => $webhook->getData()['url']
+                    ]
+                );
+
+                return $webhook;
+
+            }
+            catch (\Throwable $e) {
+                $errorMessage = __('Error creating a new webhook on Coinsnap instance: ', 'coinsnap-for-ninja-forms' ) . $e->getMessage();
+                $data['errors']['form']['coinsnap'] = esc_html($errorMessage);
+            }
+        }
+	return null;
+    }
+
+    public function updateWebhook(string $webhookId,string $webhookUrl,string $secret,bool $enabled,bool $automaticRedelivery,?array $events): ?WebhookResult {
+        try {
+            $whClient = new Webhook($this->getApiUrl(), $this->getApiKey() );
+            $webhook = $whClient->updateWebhook(
+                $this->getStoreId(),
+                $webhookUrl,
+		$webhookId,
+		$events ?? self::WEBHOOK_EVENTS,
+		$enabled,
+		$automaticRedelivery,
+		$secret
+            );
+            return $webhook;
+        }
+        catch (\Throwable $e) {
+            $errorMessage = __('Error updating existing Webhook from Coinsnap: ', 'coinsnap-for-ninja-forms' ) . $e->getMessage();
+            $data['errors']['form']['coinsnap'] = esc_html($errorMessage);
+	}
     }    
 
 } // END CLASS CoinsnapNF_PaymentGateway
