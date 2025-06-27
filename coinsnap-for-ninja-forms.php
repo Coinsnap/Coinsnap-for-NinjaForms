@@ -7,12 +7,12 @@
  * Author URI:      https://coinsnap.io
  * Text Domain:     coinsnap-for-ninja-forms
  * Domain Path:     /languages
- * Version:         1.1.0
+ * Version:         1.2.0
  * Requires PHP:    7.4
  * Tested up to:    6.8
  * Requires at least: 6.0
  * Requires Plugins: ninja-forms
- * NF tested up to: 3.10.2.1
+ * NF tested up to: 3.10.2.2
  * License:         GPL2
  * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
  *
