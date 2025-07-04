@@ -22,9 +22,8 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
         
         if (is_admin()) {
             add_action('admin_enqueue_scripts', [$this, 'enqueueAdminScripts'] );
-            add_action('wp_ajax_coinsnap_connection_handler', [$this, 'coinsnapConnectionHandler'] );
-            add_action('wp_ajax_btcpay_server_apiurl_handler', [$this, 'btcpayApiUrlHandler']);
-            
+            add_action('wp_ajax_coinsnapnf_connection_handler', [$this, 'coinsnapConnectionHandler'] );
+            add_action('wp_ajax_coinsnapnf_btcpay_server_apiurl_handler', [$this, 'btcpayApiUrlHandler']);
         }
         
         // Adding template redirect handling for coinsnap-for-ninja-forms-btcpay-settings-callback.
@@ -54,10 +53,12 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
             // Data does get submitted with url-encoded payload, so parse $_POST here.
             if (!empty($_POST) || wp_verify_nonce(filter_input(INPUT_POST,'wp_nonce',FILTER_SANITIZE_FULL_SPECIAL_CHARS),'-1')) {
                 $data['apiKey'] = filter_input(INPUT_POST,'apiKey',FILTER_SANITIZE_FULL_SPECIAL_CHARS) ?? null;
-                $permissions = (isset($_POST['permissions']) && is_array($_POST['permissions']))? $_POST['permissions'] : null;
-                if (isset($permissions)) {
-                    foreach ($permissions as $key => $value) {
-                        $data['permissions'][$key] = sanitize_text_field($permissions[$key] ?? null);
+                if(isset($_POST['permissions'])){
+                    $permissions = array_map('sanitize_text_field', wp_unslash($_POST['permissions']));
+                    if(is_array($permissions)){
+                        foreach ($permissions as $key => $value) {
+                            $data['permissions'][$key] = sanitize_text_field($permissions[$key] ?? null);
+                        }
                     }
                 }
             }
@@ -295,7 +296,7 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
                 wp_die('No Coinsnap invoiceId provided', '', ['response' => 400]);
             }
             
-            $invoice_id = $postData->invoiceId;
+            $invoice_id = esc_html($postData->invoiceId);
             
             if(strpos($invoice_id,'test_') !== false){
                 wp_die('Successful webhook test', '', ['response' => 200]);
@@ -603,26 +604,6 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
             }
         }
 	return null;
-    }
-
-    public function updateWebhook(string $webhookId,string $webhookUrl,string $secret,bool $enabled,bool $automaticRedelivery,?array $events): ?WebhookResult {
-        try {
-            $whClient = new Webhook($this->getApiUrl(), $this->getApiKey() );
-            $webhook = $whClient->updateWebhook(
-                $this->getStoreId(),
-                $webhookUrl,
-		$webhookId,
-		$events ?? self::WEBHOOK_EVENTS,
-		$enabled,
-		$automaticRedelivery,
-		$secret
-            );
-            return $webhook;
-        }
-        catch (\Throwable $e) {
-            $errorMessage = __('Error updating existing Webhook from Coinsnap: ', 'coinsnap-for-ninja-forms' ) . $e->getMessage();
-            $data['errors']['form']['coinsnap'] = esc_html($errorMessage);
-	}
-    }    
+    }  
 
 } // END CLASS CoinsnapNF_PaymentGateway

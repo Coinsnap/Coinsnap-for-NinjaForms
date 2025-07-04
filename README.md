@@ -4,10 +4,8 @@
 
 * Contributors: coinsnap
 * Tags: Lightning, Lightning Payment, SATS, Satoshi sats, bitcoin, Wordpress, Ninja Forms, payment gateway, accept bitcoin, bitcoin plugin, bitcoin payment processor, bitcoin e-commerce, Lightning Network, cryptocurrency, lightning payment processor
-* Requires at least: 5.2
 * Tested up to: 6.8
-* Requires PHP: 7.4
-* Stable tag: 1.2.0
+* Stable tag: 1.2.1
 * License:         GPL2
 * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -176,3 +174,7 @@ For further information and frequently asked questions please go to: [https://co
 * Update: Webhook data is saved as setting in Wordpress database.
 * Update: Added secret string check in webhook payload process.
 * Compatibility with Ninja Forms Plugin 3.10.2 is tested.
+
+#### 1.2.1 :: 2025-07-04
+* Updated Coinsnap Wordpress PHP library.
+* Compatibility with Ninja Forms Plugin 3.10.3 is tested.

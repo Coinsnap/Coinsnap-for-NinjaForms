@@ -8,7 +8,7 @@ jQuery(function ($) {
     
     let ajaxurl = coinsnap_ajax['ajax_url'];
     let coinsnapData = {
-            action: 'coinsnap_connection_handler',
+            action: 'coinsnapnf_connection_handler',
             _wpnonce: coinsnap_ajax['nonce']
     };
 

@@ -3,7 +3,7 @@
 Contributors: coinsnap
 Tags:  Coinsnap, Ninja Forms, Bitcoin, Lightning, gateway 
 Tested up to: 6.8
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -169,3 +169,7 @@ For further information and frequently asked questions please go to: [https://co
 * Update: Webhook data is saved as setting in Wordpress database.
 * Update: Added secret string check in webhook payload process.
 * Compatibility with Ninja Forms Plugin 3.10.2 is tested.
+
+= 1.2.1 :: 2025-07-04 =
+* Updated Coinsnap Wordpress PHP library.
+* Compatibility with Ninja Forms Plugin 3.10.3 is tested.

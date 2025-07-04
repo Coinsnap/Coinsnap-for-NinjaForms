@@ -56,7 +56,7 @@ jQuery(document).ready(function ($) {
         const host = $('#ninja_forms\\[btcpay_server_url\\]').val();
 	if (isValidUrl(host)) {
             let data = {
-                'action': 'btcpay_server_apiurl_handler',
+                'action': 'coinsnapnf_btcpay_server_apiurl_handler',
                 'host': host,
                 'apiNonce': coinsnap_ajax.nonce
             };
