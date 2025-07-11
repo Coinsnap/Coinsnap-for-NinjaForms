@@ -54,7 +54,7 @@ return apply_filters( 'coinsnapnf_plugin_settings', array(
         'class' => 'btcpay',
         'label' => __( 'BTCPay server URL*', 'coinsnap-for-ninja-forms' ),
         'width' => 'one-half',
-        'desc'  => __( '<a href="#" class="btcpay-apikey-link">Check connection</a>', 'coinsnap-for-ninja-forms' ).'<br/><br/><button class="button btcpay-apikey-link" id="btcpay_wizard_button" target="_blank">'. __('Generate API key','coinsnap-for-ninja-forms').'</button>',
+        'desc'  => __( '<a href="#" class="btcpay-apikey-link">Check connection</a>', 'coinsnap-for-ninja-forms' ).'<br/><br/><button type="button" class="button btcpay-apikey-link" id="btcpay_wizard_button" target="_blank">'. __('Generate API key','coinsnap-for-ninja-forms').'</button>',
         'help'  => __('Your BTCPay server URL.','coinsnap-for-ninja-forms'),
     ),
 
