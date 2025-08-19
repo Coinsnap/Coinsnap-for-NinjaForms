@@ -3,7 +3,7 @@
 Contributors: coinsnap
 Tags:  Coinsnap, Ninja Forms, Bitcoin, Lightning, gateway 
 Tested up to: 6.8
-Stable tag: 1.2.2
+Stable tag: 1.3.0
 License: GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -178,3 +178,9 @@ For further information and frequently asked questions please go to: [https://co
 * Updated **Generate API key** button behavior.
 * Updated connection status indication.
 * Compatibility with Ninja Forms Plugin 3.10.4 is tested.
+
+= 1.3.0 :: 2025-08-18 =
+* Update: Added nonce check for BTCPay server request in Wizard setup flow.
+* Updated BTCPay server minimum payment amount calculation system
+* Updated BTCPay server events and webhook payload handler
+* Compatibility with Ninja Forms Plugin 3.11.0 is tested.

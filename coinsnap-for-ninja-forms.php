@@ -7,12 +7,12 @@
  * Author URI:      https://coinsnap.io
  * Text Domain:     coinsnap-for-ninja-forms
  * Domain Path:     /languages
- * Version:         1.2.2
+ * Version:         1.3.0
  * Requires PHP:    7.4
  * Tested up to:    6.8
  * Requires at least: 6.0
  * Requires Plugins: ninja-forms
- * NF tested up to: 3.10.4
+ * NF tested up to: 3.11.0
  * License:         GPL2
  * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -21,7 +21,7 @@
 
 if(!defined( 'ABSPATH' ) ){ exit;}
 if(!defined('COINSNAPNF_REFERRAL_CODE')){ define( 'COINSNAPNF_REFERRAL_CODE', 'D17725' ); }
-if(!defined('COINSNAPNF_VERSION')){define( 'COINSNAPNF_VERSION', '1.2.2' );}
+if(!defined('COINSNAPNF_VERSION')){define( 'COINSNAPNF_VERSION', '1.3.0' );}
 if(!defined('COINSNAPNF_PLUGIN_ID')){define( 'COINSNAPNF_PLUGIN_ID', 'coinsnap-for-ninja-forms' );}
 if(!defined('COINSNAP_SERVER_URL')){define( 'COINSNAP_SERVER_URL', 'https://app.coinsnap.io' );}
 if(!defined('COINSNAP_API_PATH')){define( 'COINSNAP_API_PATH', '/api/v1/');}
@@ -262,6 +262,7 @@ add_action('init', function() {
 add_filter('request', function($vars) {
     if (isset($vars['coinsnap-for-ninja-forms-btcpay-settings-callback'])) {
         $vars['coinsnap-for-ninja-forms-btcpay-settings-callback'] = true;
+        $vars['coinsnap-for-ninja-forms-btcpay-nonce'] = wp_create_nonce('coinsnapnf-btcpay-nonce');
     }
     return $vars;
 });
@@ -345,7 +346,6 @@ function CoinsnapNF_Settings($data){
     return $data;
 }
 
-// Go ninja, go ninja, go!
 CoinsnapNF();
 
 

@@ -11,7 +11,8 @@ use Coinsnap\Client\Webhook;
 class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
 {
     protected $_slug = 'coinsnap';
-    public const WEBHOOK_EVENTS = ['New','Expired','Settled','Processing'];	 
+    public const COINSNAP_WEBHOOK_EVENTS = ['New','Expired','Settled','Processing','Invalid'];
+    public const BTCPAY_WEBHOOK_EVENTS = ['InvoiceCreated','InvoiceExpired','InvoiceSettled','InvoiceProcessing','InvoiceInvalid'];
 
     public function __construct(){
         parent::__construct();
@@ -33,6 +34,10 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
 
             // Only continue on a coinsnap-for-ninja-forms-btcpay-settings-callback request.
             if (!isset( $wp_query->query_vars['coinsnap-for-ninja-forms-btcpay-settings-callback'])) {
+                return;
+            }
+            
+            if(!isset($wp_query->query_vars['coinsnap-for-ninja-forms-btcpay-nonce']) || !wp_verify_nonce($wp_query->query_vars['coinsnap-for-ninja-forms-btcpay-nonce'],'coinsnapnf-btcpay-nonce')){
                 return;
             }
 
@@ -269,12 +274,11 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
             // Get headers and check for signature
             $headers = getallheaders();
             $signature = null; $payloadKey = null;
-            $_provider = ($this->get_payment_provider() === 'btcpay')? 'btcpay' : 'coinsnap';
                 
             foreach ($headers as $key => $value) {
-                if ((strtolower($key) === 'x-coinsnap-sig' && $_provider === 'coinsnap') || (strtolower($key) === 'btcpay-sig' && $_provider === 'btcpay')) {
-                        $signature = $value;
-                        $payloadKey = strtolower($key);
+                if (strtolower($key) === 'x-coinsnap-sig' || strtolower($key) === 'btcpay-sig') {
+                    $signature = $value;
+                    $payloadKey = strtolower($key);
                 }
             }
 
@@ -284,37 +288,45 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
             }
 
             // Validate the signature
+            $webhook = get_option( 'wpinv_settings_coinsnap_webhook');
+            if (!Webhook::isIncomingWebhookRequestValid($rawPostData, $signature, $webhook['secret'])) {
+                wp_die('Invalid authentication signature for '.esc_html($payloadKey), '', ['response' => 401]);
+            }
+
+            // Validate the signature
             $webhook = get_option( 'ninja_forms_settings_coinsnap_webhook_'.$form_id);
             if (!Webhook::isIncomingWebhookRequestValid($rawPostData, $signature, $webhook['secret'])) {
                 wp_die('Invalid authentication signature', '', ['response' => 401]);
             }
+            
+            try {
+                // Parse the JSON payload
+                $postData = json_decode($rawPostData, false, 512, JSON_THROW_ON_ERROR);
 
-            // Parse the JSON payload
-            $postData = json_decode($rawPostData, false, 512, JSON_THROW_ON_ERROR);
+                if (!isset($postData->invoiceId)) {
+                    wp_die('No Coinsnap invoiceId provided', '', ['response' => 400]);
+                }
 
-            if (!isset($postData->invoiceId)) {
-                wp_die('No Coinsnap invoiceId provided', '', ['response' => 400]);
+                if(strpos($postData->invoiceId,'test_') !== false){
+                    wp_die('Successful webhook test', '', ['response' => 200]);
+                }
+
+                $invoice_id = esc_html($postData->invoiceId);
+
+                $client = new \Coinsnap\Client\Invoice( $this->getApiUrl(), $this->getApiKey() );			
+                $csinvoice = $client->getInvoice($this->getStoreId(), $invoice_id);
+                $status = $csinvoice->getData()['status'] ;
+                $order_id = ($this->get_payment_provider() === 'btcpay')? $csinvoice->getData()['metadata']['orderId'] : $csinvoice->getData()['orderId'];
+
+                $this->update_submission( $order_id, array('coinsnap_status' => $status, 'coinsnap_transaction_id' => $invoice_id ) );       
+                echo "OK";
+                exit;
             }
-            
-            $invoice_id = esc_html($postData->invoiceId);
-            
-            if(strpos($invoice_id,'test_') !== false){
-                wp_die('Successful webhook test', '', ['response' => 200]);
-            }
-            
-            $client = new \Coinsnap\Client\Invoice( $this->getApiUrl(), $this->getApiKey() );			
-            $csinvoice = $client->getInvoice($this->getStoreId(), $invoice_id);
-            $status = $csinvoice->getData()['status'] ;
-            $order_id = $csinvoice->getData()['orderId'] ;
-            
-            $this->update_submission( $order_id, array('coinsnap_status' => $status, 'coinsnap_transaction_id' => $invoice_id ) );       
-            echo "OK";
-            exit;
+            catch (JsonException $e) {
+                wp_die('Invalid JSON payload', '', ['response' => 400]);
+            }        
+        }
         
-        }
-        catch (JsonException $e) {
-            wp_die('Invalid JSON payload', '', ['response' => 400]);
-        }
         catch (\Throwable $e) {
             wp_die('Internal server error', '', ['response' => 500]);
         }        
@@ -394,8 +406,20 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
             $metadata = [];
             $metadata['orderNumber'] = $invoice_no;
             $metadata['customerName'] = $buyerName;
+            
+            if($this->get_payment_provider() === 'btcpay') {
+                $metadata['orderId'] = $invoice_no;
+            }
 
             $camount = \Coinsnap\Util\PreciseNumber::parseFloat($payment_total,2);
+            
+            // Handle Sats-mode because BTCPay does not understand SAT as a currency we need to change to BTC and adjust the amount.
+            if ($currency === 'SATS' && $this->get_payment_provider() === 'btcpay') {
+                $currency = 'BTC';
+                $amountBTC = bcdiv($camount->__toString(), '100000000', 8);
+                $camount = \Coinsnap\Util\PreciseNumber::parseString($amountBTC);
+            }
+            
             $redirectAutomatically = ($this->getAutoRedirect() == 1)? true : false;
             $walletMessage = '';
             
@@ -540,7 +564,8 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
         if($form_id > 0){
         
             $whClient = new Webhook( $apiUrl, $apiKey );
-            if ($storedWebhook = get_option( 'ninja_forms_settings_coinsnap_webhook_'.$form_id)) {
+            $whOption = 'ninja_forms_settings_coinsnap_webhook_'.$form_id;
+            if($storedWebhook = get_option($whOption)) {
 
                 try {
                     $existingWebhook = $whClient->getWebhook( $storeId, $storedWebhook['id'] );
@@ -579,10 +604,11 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
         
             try {
                 $whClient = new Webhook( $apiUrl, $apiKey );
+                $webhook_events = ($this->get_payment_provider() === 'btcpay')? self::BTCPAY_WEBHOOK_EVENTS : self::COINSNAP_WEBHOOK_EVENTS;
                 $webhook = $whClient->createWebhook(
                     $storeId,   //$storeId
                     $this->get_webhook_url($form_id), //$url
-                    self::WEBHOOK_EVENTS,   //$specificEvents
+                    $webhook_events,   //$specificEvents
                     null    //$secret
                 );
 
