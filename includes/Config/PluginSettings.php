@@ -80,5 +80,13 @@ return apply_filters( 'coinsnapnf_plugin_settings', array(
         'id'    => 'coinsnap_autoredirect',
         'type'  => 'checkbox',
         'label' => __( 'Redirect after payment', 'coinsnap-for-ninja-forms' ),
-    )
+    ),
+    
+    'coinsnap_returnurl' => array(
+        'id'    => 'coinsnap_returnurl',
+        'type'  => 'textbox',
+        'label' => __( 'Return URL after payment', 'coinsnap-for-ninja-forms' ),
+        'width' => 'one-half',
+        'desc'  => __('Custom return URL after successful payment (default URL if blank)','coinsnap-for-ninja-forms'),
+    ),
 ));

@@ -283,14 +283,8 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
             }
 
             // Handle missing or invalid signature
-            if (!isset($signature)) {
+            if ($signature === null) {
                 wp_die('Authentication required', '', ['response' => 401]);
-            }
-
-            // Validate the signature
-            $webhook = get_option( 'wpinv_settings_coinsnap_webhook');
-            if (!Webhook::isIncomingWebhookRequestValid($rawPostData, $signature, $webhook['secret'])) {
-                wp_die('Invalid authentication signature for '.esc_html($payloadKey), '', ['response' => 401]);
             }
 
             // Validate the signature
@@ -303,7 +297,7 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
                 // Parse the JSON payload
                 $postData = json_decode($rawPostData, false, 512, JSON_THROW_ON_ERROR);
 
-                if (!isset($postData->invoiceId)) {
+                if ($postData->invoiceId === false) {
                     wp_die('No Coinsnap invoiceId provided', '', ['response' => 400]);
                 }
 
@@ -389,15 +383,13 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
         if($checkInvoice['result'] === true){
         
             $payment_total = number_format( $action_settings[ 'payment_total' ], 2, '.', ',' );        
-            $return_url = add_query_arg( array( 'nf_resume' => $form_id, 'coinsnap_act' => 'success' ), wp_get_referer() );
+            $return_url = (!empty(Ninja_Forms()->get_setting( 'coinsnap_returnurl' )))? Ninja_Forms()->get_setting( 'coinsnap_returnurl' ) : add_query_arg( array( 'nf_resume' => $form_id, 'coinsnap_act' => 'success' ), wp_get_referer() );
                 
             if(isset( $data[ 'resume' ] )){
                 $data[ 'actions' ][ 'success_message' ] .= '<style> .nf-ppe-spinner { display: none !important; } </style>';
                 return $data;
             }
 
-            $webhook_url = $this->get_webhook_url($form_id);
-            
             $invoice_no = $this->get_sub_id( $data );
             $first_name = $this->get_nf_data($data, 'firstname');
             $last_name = $this->get_nf_data($data, 'lastname');
@@ -411,14 +403,15 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
                 $metadata['orderId'] = $invoice_no;
             }
 
-            $camount = \Coinsnap\Util\PreciseNumber::parseFloat($payment_total,2);
-            
-            // Handle Sats-mode because BTCPay does not understand SAT as a currency we need to change to BTC and adjust the amount.
-            if ($currency === 'SATS' && $this->get_payment_provider() === 'btcpay') {
-                $currency = 'BTC';
-                $amountBTC = bcdiv($camount->__toString(), '100000000', 8);
-                $camount = \Coinsnap\Util\PreciseNumber::parseString($amountBTC);
-            }
+            // Handle currencies non-supported by BTCPay Server, we need to change them BTC and adjust the amount.
+                if (($currency === 'SATS' || $currency === 'RUB') && $this->get_payment_provider() === 'btcpay') {
+                    $currency = 'BTC';
+                    $rate = 1/$checkInvoice['rate'];
+                    $amountBTC = bcdiv(strval($amount), strval($rate), 8);
+                    $amount = (float)$amountBTC;
+                }
+                
+            $camount = ($currency === 'BTC')? \Coinsnap\Util\PreciseNumber::parseFloat($amount,8) : \Coinsnap\Util\PreciseNumber::parseFloat($amount,2);
             
             $redirectAutomatically = ($this->getAutoRedirect() == 1)? true : false;
             $walletMessage = '';
