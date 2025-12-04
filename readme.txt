@@ -2,8 +2,8 @@
 
 Contributors: coinsnap
 Tags:  Coinsnap, Ninja Forms, Bitcoin, Lightning, gateway 
-Tested up to: 6.8
-Stable tag: 1.3.1
+Tested up to: 6.9
+Stable tag: 1.3.2
 License: GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,7 +26,7 @@ Coinsnap’s Bitcoin payment plugin for Ninja Forms makes it amazingly simple fo
 = Accept Bitcoin payments with Ninja Forms in only 3 steps: = 
 
 * Get your [free Coinsnap account](https://app.coinsnap.io/register) with just your email
-* Install, activate and configure the plugin in your WordPress backend ([see the installation guide](https://coinsnap.io/coinsnap-for-ninja-forms-plugin/))
+* Install, activate and configure the plugin in your WordPress backend ([see the installation guide](https://coinsnap.io/modules/ninja-forms/ninja-forms-installation-guide/))
 * Create payment forms in Ninja Forms, place them at the appropriate places on your WordPress website and accept Bitcoin payments from your customers
 
 = Why should you choose the Coinsnap for Ninja Forms plugin? =
@@ -59,16 +59,16 @@ Coinsnap’s Bitcoin payment plugin for Ninja Forms makes it amazingly simple fo
 == More information ==
 
 * NinjaForms Coinsnap Demo Store: [https://ninjaforms.coinsnap.org](https://ninjaforms.coinsnap.org)
-* Blog Article: [https://coinsnap.io/coinsnap-for-ninja-forms-plugin/](https://coinsnap.io/coinsnap-for-ninja-forms-plugin/)
+* Blog Article: [https://coinsnap.io/modules/ninja-forms/](https://coinsnap.io/modules/ninja-forms/)
 * WordPress: [https://wordpress.org/plugins/coinsnap-for-ninja-forms/](https://wordpress.org/plugins/coinsnap-for-ninja-forms/)
 * GitHub: [https://github.com/Coinsnap/Coinsnap-for-NinjaForms/](https://github.com/Coinsnap/Coinsnap-for-NinjaForms/)
 
 == Documentation: ==
 
 * [Coinsnap API (1.0) documentation](https://docs.coinsnap.io/)
-* [Frequently Asked Questions](https://coinsnap.io/faq/) 
-* [Terms and Conditions](https://coinsnap.io/general-terms-and-conditions/)
-* [Privacy Policy](https://coinsnap.io/privacy/)
+* [Frequently Asked Questions](https://coinsnap.io/help/coinsnap-faq/) 
+* [Terms and Conditions](https://coinsnap.io/info/general-terms-and-conditions/)
+* [Privacy Policy](https://coinsnap.io/info/privacy-policy/)
 
 == Installation ==
 
@@ -132,7 +132,7 @@ Follow updates on plugin's GitHub page:
 
 == Frequently Asked Questions ==
 
-For further information and frequently asked questions please go to: [https://coinsnap.io/coinsnap-for-ninja-forms-plugin/](https://coinsnap.io/coinsnap-for-ninja-forms-plugin/)
+For further information and frequently asked questions please go to: [https://coinsnap.io/modules/ninja-forms/](https://coinsnap.io/modules/ninja-forms/)
 
 
 == Screenshots ==
@@ -189,4 +189,9 @@ For further information and frequently asked questions please go to: [https://co
 * Update: Added non-supported by BTCPay server currencies handler on invoice request flow.
 * Update: Added custom redirect after payment page in module settings.
 * Compatibility with Ninja Forms Plugin 3.12.1 is tested.
+
+= 1.3.2 :: 2025-12-04 =
+* Compatibility with Wordpress 6.9 is tested.
+* Compatibility with Ninja Forms 3.13.2 is tested.
+
 
