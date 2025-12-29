@@ -1,4 +1,5 @@
-<?php if ( ! defined( 'ABSPATH' ) ){ exit;}
+<?php 
+if ( ! defined( 'ABSPATH' ) ){ exit;}
 
 if( ! class_exists( 'NF_Abstracts_PaymentGateway' ) ){
     return;
@@ -53,6 +54,7 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
                 $messageAbort = __('Error on verifiying redirected API Key with stored BTCPay Server url. Aborting API wizard. Please try again or continue with manual setup.', 'coinsnap-for-ninja-forms');
                 $notice->addNotice('error', $messageAbort);
                 wp_redirect($CoinsnapBTCPaySettingsUrl);
+                exit();
             }
 
             // Data does get submitted with url-encoded payload, so parse $_POST here.
@@ -90,6 +92,7 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
 
             $notice->addNotice('error', __('Error processing the data from Coinsnap. Please try again.', 'coinsnap-for-ninja-forms'));
             wp_redirect($CoinsnapBTCPaySettingsUrl);
+            exit();
         });
     }
     

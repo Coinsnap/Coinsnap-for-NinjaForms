@@ -5,7 +5,7 @@
 * Contributors: coinsnap
 * Tags: Lightning, Lightning Payment, SATS, Satoshi sats, bitcoin, Wordpress, Ninja Forms, payment gateway, accept bitcoin, bitcoin plugin, bitcoin payment processor, bitcoin e-commerce, Lightning Network, cryptocurrency, lightning payment processor
 * Tested up to: 6.9
-* Stable tag: 1.3.2
+* Stable tag: 1.3.3
 * License:         GPL2
 * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
 
