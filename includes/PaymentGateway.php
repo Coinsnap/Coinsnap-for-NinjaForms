@@ -389,7 +389,6 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
             $return_url = (!empty(Ninja_Forms()->get_setting( 'coinsnap_returnurl' )))? Ninja_Forms()->get_setting( 'coinsnap_returnurl' ) : add_query_arg( array( 'nf_resume' => $form_id, 'coinsnap_act' => 'success' ), wp_get_referer() );
                 
             if(isset( $data[ 'resume' ] )){
-                $data[ 'actions' ][ 'success_message' ] .= '<style> .nf-ppe-spinner { display: none !important; } </style>';
                 return $data;
             }
 

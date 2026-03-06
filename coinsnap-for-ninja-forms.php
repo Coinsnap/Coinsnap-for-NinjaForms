@@ -1,18 +1,18 @@
 <?php
 /**
  * Plugin Name:     Bitcoin payment for Ninja Forms
- * Plugin URI:      https://coinsnap.io/coinsnap-for-ninja-forms-plugin/
+ * Plugin URI:      https://coinsnap.io/wp-add-ons/ninja-forms/
  * Description:     Accept Bitcoin-Lightning payments with Ninja Forms
  * Author:          Coinsnap
  * Author URI:      https://coinsnap.io
  * Text Domain:     coinsnap-for-ninja-forms
  * Domain Path:     /languages
- * Version:         1.3.3
+ * Version:         1.3.5
  * Requires PHP:    7.4
  * Tested up to:    6.9
  * Requires at least: 6.0
  * Requires Plugins: ninja-forms
- * NF tested up to: 3.13.3
+ * NF tested up to: 3.14.1
  * License:         GPL2
  * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -21,7 +21,7 @@
 
 if(!defined( 'ABSPATH' ) ){ exit;}
 if(!defined('COINSNAPNF_REFERRAL_CODE')){ define( 'COINSNAPNF_REFERRAL_CODE', 'D17725' ); }
-if(!defined('COINSNAPNF_VERSION')){define( 'COINSNAPNF_VERSION', '1.3.3' );}
+if(!defined('COINSNAPNF_VERSION')){define( 'COINSNAPNF_VERSION', '1.3.5' );}
 if(!defined('COINSNAPNF_PLUGIN_ID')){define( 'COINSNAPNF_PLUGIN_ID', 'coinsnap-for-ninja-forms' );}
 if(!defined('COINSNAP_SERVER_URL')){define( 'COINSNAP_SERVER_URL', 'https://app.coinsnap.io' );}
 if(!defined('COINSNAP_API_PATH')){define( 'COINSNAP_API_PATH', '/api/v1/');}
@@ -56,7 +56,7 @@ final class CoinsnapNF {
     }
 
     public function __construct(){        
-            add_action('admin_init', array( $this, 'setup_admin' ) );
+            add_action('ninja_forms_loaded', array( $this, 'setup_admin' ) );
             add_filter('ninja_forms_register_payment_gateways', array( $this, 'register_payment_gateways' ) );            
 	    add_filter('ninja_forms_register_actions', array( $this, 'register_actions' ) );            
             add_filter('nf_subs_csv_extra_values', array( $this, 'export_transaction_data' ), 10, 3 );
