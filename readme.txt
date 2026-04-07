@@ -3,7 +3,7 @@
 Contributors: coinsnap
 Tags:  Coinsnap, Ninja Forms, Bitcoin, Lightning, gateway 
 Tested up to: 6.9
-Stable tag: 1.3.5
+Stable tag: 1.3.6
 License: GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -205,3 +205,11 @@ For further information and frequently asked questions please go to: [https://co
 = 1.3.5 :: 2026-03-06 =
 * Updated plugin description.
 * Compatibility with Ninja Forms 3.14.1 is tested.
+
+= 1.3.6 :: 2026-04-07 =
+* Updated \Coinsnap\Client\Invoice class.
+* Updated \Coinsnap\Client\Store class.
+* Compatibility with Ninja Forms 3.14.2 is tested.
+* Compatibility with Wordpress 6.9.4 is tested.
+
+

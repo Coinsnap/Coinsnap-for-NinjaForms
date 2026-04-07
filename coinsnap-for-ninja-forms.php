@@ -7,12 +7,12 @@
  * Author URI:      https://coinsnap.io
  * Text Domain:     coinsnap-for-ninja-forms
  * Domain Path:     /languages
- * Version:         1.3.5
+ * Version:         1.3.6
  * Requires PHP:    7.4
  * Tested up to:    6.9
  * Requires at least: 6.0
  * Requires Plugins: ninja-forms
- * NF tested up to: 3.14.1
+ * NF tested up to: 3.14.2
  * License:         GPL2
  * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -21,7 +21,7 @@
 
 if(!defined( 'ABSPATH' ) ){ exit;}
 if(!defined('COINSNAPNF_REFERRAL_CODE')){ define( 'COINSNAPNF_REFERRAL_CODE', 'D17725' ); }
-if(!defined('COINSNAPNF_VERSION')){define( 'COINSNAPNF_VERSION', '1.3.5' );}
+if(!defined('COINSNAPNF_VERSION')){define( 'COINSNAPNF_VERSION', '1.3.6' );}
 if(!defined('COINSNAPNF_PLUGIN_ID')){define( 'COINSNAPNF_PLUGIN_ID', 'coinsnap-for-ninja-forms' );}
 if(!defined('COINSNAP_SERVER_URL')){define( 'COINSNAP_SERVER_URL', 'https://app.coinsnap.io' );}
 if(!defined('COINSNAP_API_PATH')){define( 'COINSNAP_API_PATH', '/api/v1/');}
