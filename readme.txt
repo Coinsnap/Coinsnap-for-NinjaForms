@@ -2,8 +2,8 @@
 
 Contributors: coinsnap
 Tags:  Coinsnap, Ninja Forms, Bitcoin, Lightning, gateway 
-Tested up to: 6.9
-Stable tag: 1.3.6
+Tested up to: 7.0
+Stable tag: 1.3.7
 License: GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,8 +25,8 @@ Coinsnap’s Bitcoin payment plugin for Ninja Forms makes it amazingly simple fo
 
 = Accept Bitcoin payments with Ninja Forms in only 3 steps: = 
 
-* Get your [free Coinsnap account](https://app.coinsnap.io/register) with just your email
-* Install, activate and configure the plugin in your WordPress backend ([see the installation guide](https://coinsnap.io/modules/ninja-forms/ninja-forms-installation-guide/))
+* Get your [free Coinsnap account](https://app.coinsnap.io/) with just your email
+* Install, activate and configure the plugin in your WordPress backend ([see the installation guide](https://coinsnap.io/user-guides/ninja-forms-bitcoin-user-guide/))
 * Create payment forms in Ninja Forms, place them at the appropriate places on your WordPress website and accept Bitcoin payments from your customers
 
 = Why should you choose the Coinsnap for Ninja Forms plugin? =
@@ -59,15 +59,15 @@ Coinsnap’s Bitcoin payment plugin for Ninja Forms makes it amazingly simple fo
 == More information ==
 
 * NinjaForms Coinsnap Demo Store: [https://ninjaforms.coinsnap.org](https://ninjaforms.coinsnap.org)
-* Blog Article: [https://coinsnap.io/modules/ninja-forms/](https://coinsnap.io/modules/ninja-forms/)
-* WordPress: [https://wordpress.org/plugins/coinsnap-for-ninja-forms/](https://wordpress.org/plugins/coinsnap-for-ninja-forms/)
+* Blog Article: [https://coinsnap.io/wp-add-ons/ninja-forms/](https://coinsnap.io/wp-add-ons/ninja-forms/)
+* Installation Guide: [https://coinsnap.io/user-guides/ninja-forms-bitcoin-user-guide/](https://coinsnap.io/user-guides/ninja-forms-bitcoin-user-guide/)
 * GitHub: [https://github.com/Coinsnap/Coinsnap-for-NinjaForms/](https://github.com/Coinsnap/Coinsnap-for-NinjaForms/)
 
 == Documentation: ==
 
 * [Coinsnap API (1.0) documentation](https://docs.coinsnap.io/)
 * [Frequently Asked Questions](https://coinsnap.io/help/coinsnap-faq/) 
-* [Terms and Conditions](https://coinsnap.io/info/general-terms-and-conditions/)
+* [Terms of Service](https://coinsnap.io/info/terms-of-service/)
 * [Privacy Policy](https://coinsnap.io/info/privacy-policy/)
 
 == Installation ==
@@ -132,7 +132,7 @@ Follow updates on plugin's GitHub page:
 
 == Frequently Asked Questions ==
 
-For further information and frequently asked questions please go to: [https://coinsnap.io/modules/ninja-forms/](https://coinsnap.io/modules/ninja-forms/)
+For further information and frequently asked questions please go to: [https://coinsnap.io/wp-add-ons/ninja-forms/](https://coinsnap.io/wp-add-ons/ninja-forms/)
 
 
 == Screenshots ==
