@@ -11,12 +11,18 @@ jQuery(function ($) {
             action: 'coinsnapnf_connection_handler',
             _wpnonce: coinsnap_ajax['nonce']
     };
+    // In the form builder the server also checks this form's webhook (admins only, nonce checked).
+    const pageParams = new URLSearchParams(window.location.search);
+    if (pageParams.get('page') === 'ninja-forms' && /^\d+$/.test(pageParams.get('form_id') || '')) {
+        coinsnapData.form_id = pageParams.get('form_id');
+    }
 
     jQuery.post( ajaxurl, coinsnapData, function( response ){
 
         connectionCheckResponse = $.parseJSON(response);
         let resultClass = (connectionCheckResponse.result === true)? 'success' : 'error';
-        $connectionCheckMessage = '<div class="notice notice-'+resultClass+' is-dismissible '+resultClass+'"><p>'+ connectionCheckResponse.message +'</p><button type="button" class="notice-dismiss"><span class="screen-reader-text">Dismiss this notice.</span></button></div>';
+        $connectionCheckMessage = $('<div class="notice notice-'+resultClass+' is-dismissible '+resultClass+'"><p></p><button type="button" class="notice-dismiss"><span class="screen-reader-text">Dismiss this notice.</span></button></div>');
+        $connectionCheckMessage.find('p').text(connectionCheckResponse.message);
 
         if(connectionCheckElement !== ''){
             $(connectionCheckElement).prepend($connectionCheckMessage);
@@ -26,7 +32,7 @@ jQuery(function ($) {
         }
         
         if($('#coinsnapConnectionStatus').length){
-            $('#coinsnapConnectionStatus').html('<span class="'+resultClass+'">'+ connectionCheckResponse.message +'</span>');
+            $('#coinsnapConnectionStatus').empty().append($('<span>').addClass(resultClass).text(connectionCheckResponse.message));
         }
     });
     

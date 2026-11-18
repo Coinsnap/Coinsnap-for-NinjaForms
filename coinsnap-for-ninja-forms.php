@@ -7,12 +7,12 @@
  * Author URI:      https://coinsnap.io
  * Text Domain:     coinsnap-for-ninja-forms
  * Domain Path:     /languages
- * Version:         1.3.6
+ * Version:         1.3.7
  * Requires PHP:    7.4
- * Tested up to:    6.9
+ * Tested up to:    7.0
  * Requires at least: 6.0
  * Requires Plugins: ninja-forms
- * NF tested up to: 3.14.2
+ * NF tested up to: 3.14.4
  * License:         GPL2
  * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -21,7 +21,7 @@
 
 if(!defined( 'ABSPATH' ) ){ exit;}
 if(!defined('COINSNAPNF_REFERRAL_CODE')){ define( 'COINSNAPNF_REFERRAL_CODE', 'D17725' ); }
-if(!defined('COINSNAPNF_VERSION')){define( 'COINSNAPNF_VERSION', '1.3.6' );}
+if(!defined('COINSNAPNF_VERSION')){define( 'COINSNAPNF_VERSION', '1.3.7' );}
 if(!defined('COINSNAPNF_PLUGIN_ID')){define( 'COINSNAPNF_PLUGIN_ID', 'coinsnap-for-ninja-forms' );}
 if(!defined('COINSNAP_SERVER_URL')){define( 'COINSNAP_SERVER_URL', 'https://app.coinsnap.io' );}
 if(!defined('COINSNAP_API_PATH')){define( 'COINSNAP_API_PATH', '/api/v1/');}
@@ -111,41 +111,18 @@ final class CoinsnapNF {
                             esc_html_e('Ninja Forms: Established connection to Coinsnap Server', 'coinsnap-for-ninja-forms');
                             echo '</p></div>';
 
-                            $form_id = filter_input(INPUT_GET,'form_id',FILTER_VALIDATE_INT);
-
-                            if($form_id > 0){
-
-                                if ( ! $CoinsnapPG->webhookExists( $coinsnap_url, $coinsnap_api_key, $coinsnap_store_id ) ) {
-                                    if ( ! $CoinsnapPG->registerWebhook( $coinsnap_url, $coinsnap_api_key, $coinsnap_store_id ) ) {
-                                        echo '<div class="notice notice-error is-dismissible"><p>';
-                                        esc_html_e('Unable to create webhook on Coinsnap Server', 'coinsnap-for-ninja-forms');
-                                        echo '</p></div>';
-                                    }
-                                    else {
-                                        echo '<div class="notice notice-success is-dismissible"><p>';
-                                        esc_html_e('Successfully registered webhook on Coinsnap Server', 'coinsnap-for-ninja-forms');
-                                        echo '</p></div>';
-                                    }
-                                }
-                                else {
-                                    echo '<div class="notice notice-info is-dismissible"><p>';
-                                    esc_html_e('Webhook already exists, skipping webhook creation', 'coinsnap-for-ninja-forms');
-                                    echo '</p></div>';
-                                }
-
-                            }
+                            // The webhook is checked and registered by the AJAX connection check
+                            // (capability and nonce), never by viewing a page (guide 6.5).
                         }
                         else {
                             echo '<div class="notice notice-error is-dismissible"><p>';
-                            esc_html_e('Coinsnap connection error:', 'coinsnap-for-ninja-forms');
-                            echo esc_html($store['result']['message']);
+                            esc_html_e('Coinsnap connection error', 'coinsnap-for-ninja-forms');
                             echo '</p></div>';
                         }
                     }
                     catch (\Throwable $e){
                         echo '<div class="notice notice-error is-dismissible"><p>';
-                        esc_html_e('Coinsnap connection error:', 'coinsnap-for-ninja-forms');
-                        echo esc_html($e->getMessage());
+                        esc_html_e('Coinsnap connection error', 'coinsnap-for-ninja-forms');
                         echo '</p></div>';
                     }  
                 }
@@ -262,11 +239,17 @@ add_action('init', function() {
 add_filter('request', function($vars) {
     if (isset($vars['coinsnap-for-ninja-forms-btcpay-settings-callback'])) {
         $vars['coinsnap-for-ninja-forms-btcpay-settings-callback'] = true;
-        $vars['coinsnap-for-ninja-forms-btcpay-nonce'] = wp_create_nonce('coinsnapnf-btcpay-nonce');
     }
     return $vars;
 });
 
+
+// Invoice records are kept from this version on; older submissions are accepted for one day (guide 6.7).
+add_action('init', function() {
+    if (!get_option('coinsnapnf_records_since')) {
+        update_option('coinsnapnf_records_since', time(), false);
+    }
+});
 
 function CoinsnapNF() {
     require_once (plugin_dir_path(__FILE__) . 'library/loader.php');
@@ -296,11 +279,11 @@ function CoinsnapNF_Settings($data){
     ));
     
     $new_settings = array(
-        'coinsnap_currency' => $plugin_settings['currency'],
-        'coinsnap_store_id' => $plugin_settings['store_id'],
-        'coinsnap_api_key' => $plugin_settings['api_key'],
-        'btcpay_store_id' => $plugin_settings['btcpay_store_id'],
-        'btcpay_api_key' => $plugin_settings['btcpay_api_key']
+        'coinsnap_currency' => ($plugin_settings['currency'] ?? ''),
+        'coinsnap_store_id' => ($plugin_settings['store_id'] ?? ''),
+        'coinsnap_api_key' => ($plugin_settings['api_key'] ?? ''),
+        'btcpay_store_id' => ($plugin_settings['btcpay_store_id'] ?? ''),
+        'btcpay_api_key' => ($plugin_settings['btcpay_api_key'] ?? '')
     );
     
     $current_settings = Ninja_Forms()->get_settings();

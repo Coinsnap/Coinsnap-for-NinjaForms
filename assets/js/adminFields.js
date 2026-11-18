@@ -20,7 +20,7 @@ jQuery(document).ready(function ($) {
             $('#row_ninja_forms\\[coinsnap_store_id\\]').show();
             $('#row_ninja_forms\\[coinsnap_api_key\\]').show();
             $('#ninja_forms\\[coinsnap_store_id\\]').attr('required','required');
-            $('#ninja_forms\\[coinsnap_api_key\\]').attr('required','required');
+            requireKey('#ninja_forms\\[coinsnap_api_key\\]');
         }
         else {
             $('#row_ninja_forms\\[coinsnap_store_id\\]').hide();
@@ -33,10 +33,17 @@ jQuery(document).ready(function ($) {
             $('#row_ninja_forms\\[btcpay_api_key\\]').show();
             $('#ninja_forms\\[btcpay_server_url\\]').attr('required','required');
             $('#ninja_forms\\[btcpay_store_id\\]').attr('required','required');
-            $('#ninja_forms\\[btcpay_api_key\\]').attr('required','required');
+            requireKey('#ninja_forms\\[btcpay_api_key\\]');
         }
     }
     
+    // A stored key is never sent to the page; an empty key field keeps it.
+    function requireKey(selector){
+        if($(selector).attr('data-has-key') !== '1'){
+            $(selector).attr('required','required');
+        }
+    }
+
     function isValidUrl(serverUrl) {
         try {
             const url = new URL(serverUrl);
