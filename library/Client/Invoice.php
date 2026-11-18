@@ -5,7 +5,6 @@ namespace Coinsnap\Client;
 if (!defined('ABSPATH')) {
     exit;
 }
-header('Access-Control-Allow-Origin: *');
 
 use Coinsnap\Result\InvoicePaymentMethod;
 use Coinsnap\Util\PreciseNumber;
@@ -40,11 +39,17 @@ class Invoice extends AbstractClient{
         ];
         $method = 'GET';
         $code = 1000;
+        $tries = 0;
         
-        while($code > 399){
+        // A few tries only: this runs during a visitor's form submission, so it must not loop forever.
+        while($code > 399 && $tries < 3){
             if($code !== 1000){ sleep(2); }
             $response = $this->getHttpClient()->request($method, $url, $headers);
             $code = (int)$response->getStatus();
+            $tries++;
+        }
+        if($code > 399){
+            return array('result' => false, 'error' => 'ratesLoadingError');
         }
         
         $body = json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);        
