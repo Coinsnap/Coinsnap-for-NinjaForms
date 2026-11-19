@@ -532,13 +532,23 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
             $last_name = $this->get_nf_data($data, 'lastname');
             $buyerEmail = $this->get_nf_data($data, 'email');
             $buyerName = $first_name.' '.$last_name;
-            $metadata = [];
-            $metadata['orderNumber'] = $invoice_no;
-            $metadata['customerName'] = $buyerName;
-            
-            if($this->get_payment_provider() === 'btcpay') {
-                $metadata['orderId'] = $invoice_no;
+            // orderId / orderNumber stay the submission ID: the webhook matches the invoice to the submission by it.
+            $seqNum = '';
+            if ( $invoice_no ) {
+                $sub = Ninja_Forms()->form()->sub( $invoice_no )->get();
+                $seqNum = ( $sub && method_exists( $sub, 'get_seq_num' ) ) ? (string) $sub->get_seq_num() : '';
             }
+            $metadata = CoinsnapNF_Metadata::for_submission( array(
+                'sub_id'     => $invoice_no ? (string) $invoice_no : '',
+                'seq_num'    => $seqNum,
+                'form_id'    => $form_id,
+                'form_title' => (string) ( $data['settings']['title'] ?? '' ),
+                'order_url'  => $invoice_no ? admin_url( 'post.php?post=' . (int) $invoice_no . '&action=edit' ) : '',
+                'page_url'   => (string) wp_get_referer(),
+                'version'    => COINSNAPNF_VERSION,
+                'language'   => function_exists( 'determine_locale' ) ? determine_locale() : get_locale(),
+                'fields'     => (array) ( $data['fields'] ?? array() ),
+            ) );
 
             // Handle currencies non-supported by BTCPay Server, we need to change them BTC and adjust the amount.
             if($this->get_payment_provider() === 'btcpay' && $currency !== 'BTC'){
