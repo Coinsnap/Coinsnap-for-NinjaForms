@@ -505,25 +505,29 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
             return $this->verifyOnReturn($data, (int) $form_id);
         }
 
+        $currency = strtoupper( $this->get_currency( $data ) );
+
         // A Total field's value comes from the browser; recompute it from the saved form (guide: price never from the browser).
-        $serverTotal = $this->serverTotal( (int) $form_id, $action_settings[ 'id' ] ?? 0, $data );
-        if ( $serverTotal !== null ) {
-            if ( $serverTotal === false || CoinsnapNF_Security::to_units( str_replace( ',', '', (string) $action_settings[ 'payment_total' ] ) ) !== CoinsnapNF_Security::to_units( $serverTotal ) ) {
+        $serverUnits = $this->serverTotal( (int) $form_id, $action_settings[ 'id' ] ?? 0, $data );
+        if ( $serverUnits !== null ) {
+            $browserUnits = CoinsnapNF_Security::to_units( str_replace( ',', '', (string) $action_settings[ 'payment_total' ] ) );
+            // Ninja Forms' Total field always shows 2 decimals (also for BTC), so compare at that precision.
+            if ( $serverUnits === false || $browserUnits === null || self::units_to_amount( $browserUnits, 2 ) !== self::units_to_amount( $serverUnits, 2 ) ) {
                 $data['errors']['form']['coinsnap'] = __( 'The order total could not be confirmed. Please reload the page and try again.', 'coinsnap-for-ninja-forms' );
                 return $data;
             }
-            $action_settings[ 'payment_total' ] = $serverTotal;
+            // The invoice gets the server's total with the currency's own decimals.
+            $action_settings[ 'payment_total' ] = self::units_to_amount( $serverUnits, self::currency_decimals( $currency ) );
         }
 
         $client =new \Coinsnap\Client\Invoice($this->getApiUrl(), $this->getApiKey());
-        $currency = $this->get_currency( $data );
         $amount = (float)$action_settings[ 'payment_total' ];
         
         $checkInvoice = $this->coinsnapnf_amount_validation($amount,strtoupper( $currency ));
         
         if($checkInvoice['result'] === true){
         
-            $payment_total = number_format( $action_settings[ 'payment_total' ], 2, '.', ',' );        
+            $payment_total = number_format( $amount, self::currency_decimals( $currency ), '.', ',' );
             $return_url = (!empty(Ninja_Forms()->get_setting( 'coinsnap_returnurl' )))? Ninja_Forms()->get_setting( 'coinsnap_returnurl' ) : add_query_arg( array( 'nf_resume' => $form_id, 'coinsnap_act' => 'success' ), wp_get_referer() );
 
 
@@ -573,7 +577,7 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
                 }
             }
                 
-            $camount = ($currency === 'BTC')? \Coinsnap\Util\PreciseNumber::parseFloat($amount,8) : \Coinsnap\Util\PreciseNumber::parseFloat($amount,2);
+            $camount = \Coinsnap\Util\PreciseNumber::parseFloat($amount, self::currency_decimals($currency));
             
             $redirectAutomatically = ($this->getAutoRedirect() == 1)? true : false;
             $walletMessage = '';
@@ -621,8 +625,7 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
             
             }
             catch (\Throwable $e){
-                $errorMessage = __( 'API connection is not established', 'coinsnap-for-ninja-forms' );
-                $data['errors']['form']['coinsnap'] = $errorMessage;
+                $data['errors']['form']['coinsnap'] = self::invoice_error_message( $e );
                 return $data;
             }
         }
@@ -648,11 +651,49 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
     }
 
     
+    // What the visitor sees when the API refuses to create the invoice.
+    private static function invoice_error_message( \Throwable $e ): string {
+        // The response body (the bundled library has it in the message, newer ones in getResponseBody()).
+        $body = method_exists( $e, 'getResponseBody' ) ? (string) $e->getResponseBody() : $e->getMessage();
+        // On-chain only stores refuse amounts below the dust limit (294 sats).
+        if ( stripos( html_entity_decode( $body, ENT_QUOTES ), 'dust' ) !== false ) {
+            return __( 'This amount is too small for a Bitcoin payment. Please choose a larger amount.', 'coinsnap-for-ninja-forms' );
+        }
+        return __( 'API connection is not established', 'coinsnap-for-ninja-forms' );
+    }
+
+    // Decimals of an invoice amount: whole sats for SATS, 8 for BTC, 2 for everything else.
+    private static function currency_decimals( string $currency ): int {
+        $currency = strtoupper( $currency );
+        if ( $currency === 'SATS' ) {
+            return 0;
+        }
+        return ( $currency === 'BTC' ) ? 8 : 2;
+    }
+
+    // An amount in 10^-8 units as a decimal string with $decimals places, rounded half up.
+    private static function units_to_amount( int $units, int $decimals ): string {
+        $step = (int) pow( 10, 8 - $decimals );
+        $rounded = intdiv( $units + intdiv( $step, 2 ), $step );
+        if ( $decimals === 0 ) {
+            return (string) $rounded;
+        }
+        $digits = str_pad( (string) $rounded, $decimals + 1, '0', STR_PAD_LEFT );
+        return substr( $digits, 0, -$decimals ) . '.' . substr( $digits, -$decimals );
+    }
+
+    // A product price or shipping cost as Ninja Forms reads it: everything but digits and the point dropped
+    // (currency symbols such as $, ฿ or "sats", and thousands separators).
+    private static function price_units( $value ): ?int {
+        $clean = preg_replace( '/[^\d.]/', '', str_replace( ',', '', html_entity_decode( (string) $value, ENT_QUOTES, 'UTF-8' ) ) );
+        return CoinsnapNF_Security::to_units( (string) $clean );
+    }
+
     /**
-     * When the payment total is a Total field, the total recomputed from the saved form: product
-     * prices and shipping costs from the database, quantities from the visitor. Returns null if
-     * the payment total is something else (a fixed amount, a calculation or an amount the visitor
-     * chooses), and false if it can't be recomputed safely.
+     * When the payment total is a Total field, the total recomputed from the saved form, in 10^-8
+     * units: product prices and shipping costs from the database, quantities from the visitor.
+     * Returns null if the payment total is something else (a fixed amount, a calculation or an
+     * amount the visitor chooses), and false if it can't be recomputed safely.
      */
     private function serverTotal( int $form_id, $action_id, array $data ) {
         $action = $action_id ? Ninja_Forms()->form( $form_id )->get_action( $action_id ) : null;
@@ -690,7 +731,7 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
                 if ( ! in_array( $productType, array( '', 'single', 'hidden' ), true ) ) {
                     return false;
                 }
-                $price = CoinsnapNF_Security::to_units( str_replace( array( ',', '$' ), '', (string) $field->get_setting( 'product_price' ) ) );
+                $price = self::price_units( $field->get_setting( 'product_price' ) );
                 if ( $price === null ) {
                     return false;
                 }
@@ -708,11 +749,11 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
                 if ( ! in_array( (string) $field->get_setting( 'shipping_type' ), array( '', 'single' ), true ) ) {
                     return false;
                 }
-                $cost = CoinsnapNF_Security::to_units( str_replace( array( ',', '$' ), '', (string) $field->get_setting( 'shipping_cost' ) ) );
+                $cost = self::price_units( $field->get_setting( 'shipping_cost' ) );
                 $sum += (int) $cost;
             }
         }
-        return number_format( $sum / 100000000, 2, '.', '' );
+        return $sum;
     }
 
     private function is_success( $response ){
@@ -757,10 +798,17 @@ class CoinsnapNF_PaymentGateway extends NF_Abstracts_PaymentGateway
     private function get_currency( $form_data )
     {
         
-        $coinsnap_currency = Ninja_Forms()->get_setting( 'coinsnap_currency', 'USD' );
-        $plugin_currency = Ninja_Forms()->get_setting( 'currency', $coinsnap_currency );
-        $form_currency   = ( isset( $form_data[ 'settings' ][ 'currency' ] ) && $form_data[ 'settings' ][ 'currency' ] !== '' ) ? $form_data[ 'settings' ][ 'currency' ] : $plugin_currency;
-        return $form_currency;
+        // The form's currency, else Ninja Forms' currency (Settings > General).
+        if ( isset( $form_data[ 'settings' ][ 'currency' ] ) && $form_data[ 'settings' ][ 'currency' ] !== '' ) {
+            return (string) $form_data[ 'settings' ][ 'currency' ];
+        }
+        $plugin_currency = (string) Ninja_Forms()->get_setting( 'currency', '' );
+        if ( $plugin_currency !== '' ) {
+            return $plugin_currency;
+        }
+        // Last fallback: the currency saved by old versions of this plugin (copied by CoinsnapNF_Settings()).
+        $legacy_currency = (string) Ninja_Forms()->get_setting( 'coinsnap_currency', '' );
+        return ( $legacy_currency !== '' ) ? $legacy_currency : 'USD';
     }
 
     public function get_nf_data($data, $key) {		
