@@ -61,6 +61,8 @@ final class CoinsnapNF {
 	    add_filter('ninja_forms_register_actions', array( $this, 'register_actions' ) );            
             add_filter('nf_subs_csv_extra_values', array( $this, 'export_transaction_data' ), 10, 3 );
             add_filter('ninja_forms_new_form_templates', array( $this, 'register_templates' ) );
+            add_filter('ninja_forms_currency', array( $this, 'add_bitcoin_currencies' ) );
+            add_filter('ninja_forms_currency_symbol', array( $this, 'add_bitcoin_currency_symbols' ) );
             add_filter('nf_react_table_extra_value_keys', array($this, 'addMetabox'));
             add_action('init', array($this, 'process_webhook'));
             add_action('admin_notices', array($this, 'coinsnapnf_notice'));
@@ -167,6 +169,26 @@ final class CoinsnapNF {
             'form'          => self::form_templates( 'coinsnap-payment.json' ),
         );
         return $templates;
+    }
+
+    // Coinsnap takes SATS and BTC, but Ninja Forms' currency list has neither.
+    public function add_bitcoin_currencies( $currencies ){
+        if( ! is_array( $currencies ) ){ return $currencies; }
+        if( ! isset( $currencies[ 'SATS' ] ) ){
+            $currencies[ 'SATS' ] = array( 'label' => esc_attr__( 'Satoshis (SATS)', 'coinsnap-for-ninja-forms' ), 'value' => 'SATS' );
+        }
+        if( ! isset( $currencies[ 'BTC' ] ) ){
+            $currencies[ 'BTC' ] = array( 'label' => esc_attr__( 'Bitcoin (BTC)', 'coinsnap-for-ninja-forms' ), 'value' => 'BTC' );
+        }
+        return $currencies;
+    }
+
+    // Ninja Forms puts the symbol in front of prices and totals. It already has one for BTC.
+    public function add_bitcoin_currency_symbols( $symbols ){
+        if( ! is_array( $symbols ) ){ return $symbols; }
+        if( ! isset( $symbols[ 'SATS' ] ) ){ $symbols[ 'SATS' ] = 'sats&nbsp;'; }
+        if( ! isset( $symbols[ 'BTC' ] ) ){ $symbols[ 'BTC' ] = '&#3647;'; }
+        return $symbols;
     }
 
     public static function form_templates( $file_name = '', array $data = array() ){
